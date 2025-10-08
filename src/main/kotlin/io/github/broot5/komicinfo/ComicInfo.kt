@@ -1,0 +1,63 @@
+package io.github.broot5.komicinfo
+
+import io.github.broot5.komicinfo.model.AgeRating
+import io.github.broot5.komicinfo.model.ComicPageType
+import io.github.broot5.komicinfo.model.Manga
+import io.github.broot5.komicinfo.model.YesNo
+import java.time.LocalDate
+
+data class ComicInfo(
+    val title: String? = null,
+    val series: String? = null,
+    val number: String? = null,
+    val count: Int? = null,
+    val volume: Int? = null,
+    val alternateSeries: String? = null,
+    val alternateNumber: String? = null,
+    val alternateCount: Int? = null,
+    val summary: String? = null,
+    val notes: String? = null,
+    val date: LocalDate? = null, // Represents Year / Month / Day
+    val writer: List<String> = emptyList(),
+    val penciller: List<String> = emptyList(),
+    val inker: List<String> = emptyList(),
+    val colorist: List<String> = emptyList(),
+    val letterer: List<String> = emptyList(),
+    val coverArtist: List<String> = emptyList(),
+    val editor: List<String> = emptyList(),
+    val translator: List<String> = emptyList(),
+    val publisher: String? = null,
+    val imprint: String? = null,
+    val genre: List<String> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val web: List<String> = emptyList(),
+    val pageCount: Int = 0,
+    val languageISO: String? = null,
+    val format: String? = null,
+    val blackAndWhite: YesNo = YesNo.UNKNOWN,
+    val manga: Manga = Manga.UNKNOWN,
+    val characters: List<String> = emptyList(),
+    val teams: List<String> = emptyList(),
+    val locations: List<String> = emptyList(),
+    val scanInformation: String? = null,
+    val storyArc: List<String> = emptyList(),
+    val storyArcNumber: List<String> = emptyList(),
+    val seriesGroup: List<String> = emptyList(),
+    val ageRating: AgeRating = AgeRating.UNKNOWN,
+    val pages: List<ComicPage> = emptyList(),
+    val communityRating: Float? = null,
+    val mainCharacterOrTeam: String? = null,
+    val review: String? = null,
+    val gtin: String? = null,
+)
+
+data class ComicPage(
+    val image: Int,
+    val type: ComicPageType = ComicPageType.STORY,
+    val doublePage: Boolean = false, // false = single page
+    val imageSize: Long = 0L, // 0 = unknown
+    val key: String? = null,
+    val bookmark: String? = null,
+    val imageWidth: Int? = null, // null = unknown
+    val imageHeight: Int? = null, // null = unknown
+)

@@ -1,10 +1,7 @@
 package io.github.broot5.komicinfo
 
 import generated.ArrayOfComicPageInfo
-import io.github.broot5.komicinfo.model.AgeRating
-import io.github.broot5.komicinfo.model.ComicPageType
-import io.github.broot5.komicinfo.model.Manga
-import io.github.broot5.komicinfo.model.YesNo
+import io.github.broot5.komicinfo.model.*
 import java.time.LocalDate
 import generated.AgeRating as GeneratedAgeRating
 import generated.ComicInfo as GeneratedComicInfo
@@ -108,18 +105,20 @@ fun ComicInfo.toGeneratedComicInfo(): GeneratedComicInfo {
 
 fun GeneratedComicInfo.toComicInfo(): ComicInfo {
   // Convert Year, Month, Day to LocalDate
-  val date = runCatching {
-    if (
-        this.year != null &&
-            this.month != null &&
-            this.day != null &&
-            this.year > 0 &&
-            this.month > 0 &&
-            this.day > 0
-    ) {
-      LocalDate.of(this.year, this.month, this.day)
-    } else null
-  }.getOrNull()
+  val date =
+      runCatching {
+            if (
+                this.year != null &&
+                    this.month != null &&
+                    this.day != null &&
+                    this.year > 0 &&
+                    this.month > 0 &&
+                    this.day > 0
+            ) {
+              LocalDate.of(this.year, this.month, this.day)
+            } else null
+          }
+          .getOrNull()
 
   return ComicInfo(
       title = this.title,

@@ -85,19 +85,31 @@ object ComicBookWriter {
       val stringWriter = StringWriter()
       marshaller.marshal(jaxbElement, stringWriter)
       val xmlString = stringWriter.toString()
+      val xmlBytes = xmlString.toByteArray(Charsets.UTF_8)
 
       ZipArchiveOutputStream(BufferedOutputStream(FileOutputStream(file))).use { zipStream ->
         // Write ComicInfo.xml
-        val xmlEntry = ZipArchiveEntry("ComicInfo.xml")
+        val xmlEntry =
+            ZipArchiveEntry("ComicInfo.xml").apply {
+              method = ZipArchiveEntry.STORED
+              size = xmlBytes.size.toLong()
+              crc = java.util.zip.CRC32().apply { update(xmlBytes) }.value
+            }
         zipStream.putArchiveEntry(xmlEntry)
-        zipStream.write(xmlString.toByteArray(Charsets.UTF_8))
+        zipStream.write(xmlBytes)
         zipStream.closeArchiveEntry()
 
         // Write image files
         comicBook.imageFiles.forEach { imageFile ->
-          val imageEntry = ZipArchiveEntry(imageFile.name)
+          val imageBytes = imageFile.readBytes()
+          val imageEntry =
+              ZipArchiveEntry(imageFile.name).apply {
+                method = ZipArchiveEntry.STORED
+                size = imageBytes.size.toLong()
+                crc = java.util.zip.CRC32().apply { update(imageBytes) }.value
+              }
           zipStream.putArchiveEntry(imageEntry)
-          imageFile.inputStream().use { it.copyTo(zipStream) }
+          zipStream.write(imageBytes)
           zipStream.closeArchiveEntry()
         }
 

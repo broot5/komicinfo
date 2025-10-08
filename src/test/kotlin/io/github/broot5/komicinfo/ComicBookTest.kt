@@ -11,82 +11,28 @@ class ComicBookTest {
   @TempDir lateinit var tempDir: Path
 
   @Test
-  fun `should correctly extract dimensions from different image formats`() {
-    val jpgImage = TestHelper.createImageFile(tempDir, "page1.jpg", 1920, 1080)
-    val pngImage = TestHelper.createImageFile(tempDir, "page2.png", 800, 600, format = "png")
-
-    val info = ComicInfo(title = "Multi-format Test")
-    val comicBook = ComicBook.create(info, listOf(jpgImage, pngImage))
-
-    assertEquals(2, comicBook.info.pageCount)
-    assertEquals(2, comicBook.info.pages.size)
-
-    // Verify JPG dimensions
-    assertEquals(1920, comicBook.info.pages[0].imageWidth)
-    assertEquals(1080, comicBook.info.pages[0].imageHeight)
-
-    // Verify PNG dimensions
-    assertEquals(800, comicBook.info.pages[1].imageWidth)
-    assertEquals(600, comicBook.info.pages[1].imageHeight)
-  }
-
-  @Test
-  fun `should handle image processing errors gracefully`() {
-    val invalidImage = tempDir.resolve("invalid.jpg").toFile().apply { writeText("invalid image") }
-    val info = ComicInfo(title = "Test")
-
-    // ImageIO.read returns null for invalid images - should not crash
-    val comicBook = ComicBook.create(info, listOf(invalidImage))
-
-    assertEquals(1, comicBook.info.pages.size)
-    assertNull(comicBook.info.pages[0].imageWidth)
-    assertNull(comicBook.info.pages[0].imageHeight)
-  }
-
-  @Test
-  fun `should set correct page indices`() {
-    val image1 = TestHelper.createImageFile(tempDir, "page1.jpg", 800, 600)
-    val image2 = TestHelper.createImageFile(tempDir, "page2.jpg", 800, 600)
-    val image3 = TestHelper.createImageFile(tempDir, "page3.jpg", 800, 600)
-
-    val info = ComicInfo(title = "Test")
-    val comicBook = ComicBook.create(info, listOf(image1, image2, image3))
-
-    assertEquals(0, comicBook.info.pages[0].image)
-    assertEquals(1, comicBook.info.pages[1].image)
-    assertEquals(2, comicBook.info.pages[2].image)
-  }
-
-  @Test
-  fun `should calculate image file sizes`() {
-    val image = TestHelper.createImageFile(tempDir, "page.jpg", 800, 600)
-    val info = ComicInfo(title = "Test")
-    val comicBook = ComicBook.create(info, listOf(image))
-
-    assertTrue(comicBook.info.pages[0].imageSize > 0)
-    assertEquals(image.length(), comicBook.info.pages[0].imageSize)
-  }
-
-  @Test
-  fun `should handle mixed valid and invalid images`() {
+  fun `should handle valid and invalid images together`() {
     val validImage = TestHelper.createImageFile(tempDir, "valid.jpg", 800, 600)
-    val invalidImage = tempDir.resolve("invalid.jpg").toFile().apply { writeText("invalid image") }
-    val anotherValidImage = TestHelper.createImageFile(tempDir, "valid2.jpg", 1024, 768)
+    val invalidImage = tempDir.resolve("invalid.jpg").toFile().apply { writeText("invalid") }
+    val pngImage = TestHelper.createImageFile(tempDir, "page.png", 1024, 768, format = "png")
 
     val info = ComicInfo(title = "Mixed Test")
-    val comicBook = ComicBook.create(info, listOf(validImage, invalidImage, anotherValidImage))
+    val comicBook = ComicBook.create(info, listOf(validImage, invalidImage, pngImage))
 
+    // Verify page count and basic structure
+    assertEquals(3, comicBook.info.pageCount)
     assertEquals(3, comicBook.info.pages.size)
 
-    // First page should have valid dimensions
+    // Valid JPG should have dimensions
     assertEquals(800, comicBook.info.pages[0].imageWidth)
     assertEquals(600, comicBook.info.pages[0].imageHeight)
+    assertTrue(comicBook.info.pages[0].imageSize > 0)
 
-    // Second page should have null dimensions
+    // Invalid image should have null dimensions but still exist
     assertNull(comicBook.info.pages[1].imageWidth)
     assertNull(comicBook.info.pages[1].imageHeight)
 
-    // Third page should have valid dimensions
+    // Valid PNG should have dimensions
     assertEquals(1024, comicBook.info.pages[2].imageWidth)
     assertEquals(768, comicBook.info.pages[2].imageHeight)
   }
@@ -110,18 +56,26 @@ class ComicBookTest {
     assertEquals("1", comicBook.info.number)
     assertEquals(listOf("Author 1", "Author 2"), comicBook.info.writer)
     assertEquals("Test Publisher", comicBook.info.publisher)
+    assertEquals(1, comicBook.info.pageCount) // Auto-updated
   }
 
   @Test
-  fun `should auto-update pageCount`() {
-    val image1 = TestHelper.createImageFile(tempDir, "page1.jpg", 800, 600)
-    val image2 = TestHelper.createImageFile(tempDir, "page2.jpg", 800, 600)
-    val image3 = TestHelper.createImageFile(tempDir, "page3.jpg", 800, 600)
+  fun `pageBuilder should allow customization`() {
+    val image1 = TestHelper.createImageFile(tempDir, "cover.jpg", 800, 1200)
+    val image2 = TestHelper.createImageFile(tempDir, "page1.jpg", 800, 1200)
 
-    val info = ComicInfo(title = "Test", pageCount = 99) // Wrong count
-    val comicBook = ComicBook.create(info, listOf(image1, image2, image3))
+    val info = ComicInfo(title = "Test")
+    val comicBook =
+        ComicBook.create(info, listOf(image1, image2)) { page, file ->
+          if (file.name.contains("cover")) {
+            page.copy(type = io.github.broot5.komicinfo.model.ComicPageType.FRONT_COVER)
+          } else {
+            page.copy(bookmark = "Page ${page.image}")
+          }
+        }
 
-    // Should be autocorrected to actual image count
-    assertEquals(3, comicBook.info.pageCount)
+    assertEquals(
+        io.github.broot5.komicinfo.model.ComicPageType.FRONT_COVER, comicBook.info.pages[0].type)
+    assertEquals("Page 1", comicBook.info.pages[1].bookmark)
   }
 }

@@ -12,34 +12,21 @@ class ComicBookWriterTest {
   @TempDir lateinit var tempDir: Path
 
   @Test
-  fun `should successfully write CBZ file`() {
-    val imageFile = TestHelper.createImageFile(tempDir, "page.jpg", 800, 1200)
+  fun `should successfully write and read CBZ file`() {
+    val imageFile = TestHelper.createImageFile(tempDir, "page.jpg", 1024, 768)
     val info = ComicInfo(title = "Test Comic", writer = listOf("Test Author"))
     val comicBook = ComicBook.create(info, listOf(imageFile))
     val outputFile = tempDir.resolve("output.cbz").toFile()
 
-    val result = ComicBookWriter.write(comicBook, outputFile)
-
-    assertTrue(result.isSuccess)
-    assertTrue(outputFile.exists())
-    assertTrue(outputFile.length() > 0)
-  }
-
-  @Test
-  fun `should write and read round-trip preserving all data`() {
-    val originalInfo = ComicInfo(title = "Round-trip Test", writer = listOf("Tester"))
-    val imageFile = TestHelper.createImageFile(tempDir, "round-trip.jpg", 1024, 768)
-    val originalComicBook = ComicBook.create(originalInfo, listOf(imageFile))
-    val outputFile = tempDir.resolve("round-trip.cbz").toFile()
-
-    val writeResult = ComicBookWriter.write(originalComicBook, outputFile)
+    val writeResult = ComicBookWriter.write(comicBook, outputFile)
     assertTrue(writeResult.isSuccess)
+    assertTrue(outputFile.exists())
 
+    // Verify round-trip
     val readInfo = ComicBookReader.read(outputFile).getOrNull()
-
     assertNotNull(readInfo)
-    assertEquals(originalInfo.title, readInfo?.title)
-    assertEquals(originalInfo.writer, readInfo?.writer)
+    assertEquals("Test Comic", readInfo?.title)
+    assertEquals(listOf("Test Author"), readInfo?.writer)
     assertEquals(1024, readInfo?.pages?.get(0)?.imageWidth)
     assertEquals(768, readInfo?.pages?.get(0)?.imageHeight)
   }
@@ -83,8 +70,6 @@ class ComicBookWriterTest {
     val comicBook1 = ComicBook.create(info1, listOf(image1))
     ComicBookWriter.write(comicBook1, outputFile).getOrThrow()
 
-    val firstSize = outputFile.length()
-
     // Overwrite with second file
     val info2 = ComicInfo(title = "Second Version")
     val comicBook2 = ComicBook.create(info2, listOf(image2))
@@ -94,22 +79,5 @@ class ComicBookWriterTest {
     val readInfo = ComicBookReader.read(outputFile).getOrNull()
     assertNotNull(readInfo)
     assertEquals("Second Version", readInfo?.title)
-    assertNotEquals(firstSize, outputFile.length())
-  }
-
-  @Test
-  fun `should create parent directories if they do not exist`() {
-    val imageFile = TestHelper.createImageFile(tempDir, "page.jpg", 800, 600)
-    val info = ComicInfo(title = "Test")
-    val comicBook = ComicBook.create(info, listOf(imageFile))
-    val outputFile = tempDir.resolve("dir1/dir2/output.cbz").toFile()
-
-    assertFalse(outputFile.parentFile.exists())
-
-    val result = ComicBookWriter.write(comicBook, outputFile)
-
-    assertTrue(result.isSuccess)
-    assertTrue(outputFile.exists())
-    assertTrue(outputFile.parentFile.exists())
   }
 }

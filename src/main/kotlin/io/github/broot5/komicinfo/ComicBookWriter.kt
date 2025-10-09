@@ -39,7 +39,7 @@ object ComicBookWriter {
       // Use temporary file
       val tempFile =
           File.createTempFile(
-              "komic-info-",
+              "komicinfo-",
               ".tmp",
               destination.parentFile ?: File(System.getProperty("java.io.tmpdir")),
           )

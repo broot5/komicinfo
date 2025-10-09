@@ -1,4 +1,4 @@
-# komic-info
+# komicinfo
 
 A Kotlin library for reading and writing ComicBook archives (CBZ)
 with [ComicInfo.xml](https://anansi-project.github.io/docs/comicinfo/schemas/v2.1) metadata.
@@ -71,8 +71,8 @@ val comicBook = ComicBook.create(info, imageFiles) { page, file ->
 
 ```bash
 # Clone the repository
-git clone https://github.com/broot5/komic-info.git
-cd komic-info
+git clone https://github.com/broot5/komicinfo.git
+cd komicinfo
 
 # Build the project
 ./gradlew build

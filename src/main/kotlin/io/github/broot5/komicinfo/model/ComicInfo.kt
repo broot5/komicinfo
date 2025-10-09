@@ -13,7 +13,7 @@ data class ComicInfo(
     val alternateCount: Int? = null,
     val summary: String? = null,
     val notes: String? = null,
-    val date: LocalDate? = null, // Represents Year / Month / Day
+    val date: LocalDate? = null, // Year/Month/Day from ComicInfo XML
     val writer: List<String> = emptyList(),
     val penciller: List<String> = emptyList(),
     val inker: List<String> = emptyList(),
@@ -30,8 +30,8 @@ data class ComicInfo(
     val pageCount: Int = 0,
     val languageISO: String? = null,
     val format: String? = null,
-    val blackAndWhite: YesNo = YesNo.UNKNOWN,
-    val manga: Manga = Manga.UNKNOWN,
+    val blackAndWhite: YesNo? = null,
+    val manga: Manga? = null,
     val characters: List<String> = emptyList(),
     val teams: List<String> = emptyList(),
     val locations: List<String> = emptyList(),
@@ -39,7 +39,7 @@ data class ComicInfo(
     val storyArc: List<String> = emptyList(),
     val storyArcNumber: List<String> = emptyList(),
     val seriesGroup: List<String> = emptyList(),
-    val ageRating: AgeRating = AgeRating.UNKNOWN,
+    val ageRating: AgeRating? = null,
     val pages: List<ComicPage> = emptyList(),
     val communityRating: Float? = null,
     val mainCharacterOrTeam: String? = null,

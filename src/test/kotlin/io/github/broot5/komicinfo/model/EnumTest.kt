@@ -1,6 +1,6 @@
 package io.github.broot5.komicinfo.model
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /** Tests for enum classes and their fromValue methods */

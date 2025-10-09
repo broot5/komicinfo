@@ -26,7 +26,8 @@ class ComicBookTest {
     // Valid JPG should have dimensions
     assertEquals(800, comicBook.info.pages[0].imageWidth)
     assertEquals(600, comicBook.info.pages[0].imageHeight)
-    assertTrue(comicBook.info.pages[0].imageSize > 0)
+    assertNotNull(comicBook.info.pages[0].imageSize)
+    assertTrue(comicBook.info.pages[0].imageSize!! > 0)
 
     // Invalid image should have null dimensions but still exist
     assertNull(comicBook.info.pages[1].imageWidth)
@@ -75,7 +76,9 @@ class ComicBookTest {
         }
 
     assertEquals(
-        io.github.broot5.komicinfo.model.ComicPageType.FRONT_COVER, comicBook.info.pages[0].type)
+        io.github.broot5.komicinfo.model.ComicPageType.FRONT_COVER,
+        comicBook.info.pages[0].type,
+    )
     assertEquals("Page 1", comicBook.info.pages[1].bookmark)
   }
 }

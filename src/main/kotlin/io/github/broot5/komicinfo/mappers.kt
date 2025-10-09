@@ -20,12 +20,15 @@ fun ComicInfo.toGeneratedComicInfo(): GeneratedComicInfo {
   generated.title = this.title
   generated.series = this.series
   generated.number = this.number
-  // Convert null to XSD default value -1
-  generated.count = this.count ?: -1
-  generated.volume = this.volume ?: -1
+
+  generated.count = this.count
+  generated.volume = this.volume
+
   generated.alternateSeries = this.alternateSeries
   generated.alternateNumber = this.alternateNumber
-  generated.alternateCount = this.alternateCount ?: -1
+
+  generated.alternateCount = this.alternateCount
+
   generated.summary = this.summary
   generated.notes = this.notes
 
@@ -33,47 +36,43 @@ fun ComicInfo.toGeneratedComicInfo(): GeneratedComicInfo {
     generated.year = this.date.year
     generated.month = this.date.monthValue
     generated.day = this.date.dayOfMonth
-  } else {
-    // Set XSD default values when null
-    generated.year = -1
-    generated.month = -1
-    generated.day = -1
   }
 
-  generated.writer = this.writer.join()
-  generated.penciller = this.penciller.join()
-  generated.inker = this.inker.join()
-  generated.colorist = this.colorist.join()
-  generated.letterer = this.letterer.join()
-  generated.coverArtist = this.coverArtist.join()
-  generated.editor = this.editor.join()
-  generated.translator = this.translator.join()
+  if (this.writer.isNotEmpty()) generated.writer = this.writer.join()
+  if (this.penciller.isNotEmpty()) generated.penciller = this.penciller.join()
+  if (this.inker.isNotEmpty()) generated.inker = this.inker.join()
+  if (this.colorist.isNotEmpty()) generated.colorist = this.colorist.join()
+  if (this.letterer.isNotEmpty()) generated.letterer = this.letterer.join()
+  if (this.coverArtist.isNotEmpty()) generated.coverArtist = this.coverArtist.join()
+  if (this.editor.isNotEmpty()) generated.editor = this.editor.join()
+  if (this.translator.isNotEmpty()) generated.translator = this.translator.join()
 
   generated.publisher = this.publisher
   generated.imprint = this.imprint
 
-  generated.genre = this.genre.join()
-  generated.tags = this.tags.join()
-  generated.web = this.web.join(" ")
+  if (this.genre.isNotEmpty()) generated.genre = this.genre.join()
+  if (this.tags.isNotEmpty()) generated.tags = this.tags.join()
+  if (this.web.isNotEmpty()) generated.web = this.web.join(" ")
 
-  generated.pageCount = this.pageCount
+  generated.pageCount = this.pageCount // Always included (0 is valid)
+
   generated.languageISO = this.languageISO
   generated.format = this.format
 
-  generated.blackAndWhite = GeneratedYesNo.fromValue(this.blackAndWhite.value)
-  generated.manga = GeneratedManga.fromValue(this.manga.value)
+  generated.blackAndWhite = this.blackAndWhite?.let { GeneratedYesNo.fromValue(it.value) }
+  generated.manga = this.manga?.let { GeneratedManga.fromValue(it.value) }
 
-  generated.characters = this.characters.join()
-  generated.teams = this.teams.join()
-  generated.locations = this.locations.join()
+  if (this.characters.isNotEmpty()) generated.characters = this.characters.join()
+  if (this.teams.isNotEmpty()) generated.teams = this.teams.join()
+  if (this.locations.isNotEmpty()) generated.locations = this.locations.join()
 
   generated.scanInformation = this.scanInformation
 
-  generated.storyArc = this.storyArc.join()
-  generated.storyArcNumber = this.storyArcNumber.join()
-  generated.seriesGroup = this.seriesGroup.join()
+  if (this.storyArc.isNotEmpty()) generated.storyArc = this.storyArc.join()
+  if (this.storyArcNumber.isNotEmpty()) generated.storyArcNumber = this.storyArcNumber.join()
+  if (this.seriesGroup.isNotEmpty()) generated.seriesGroup = this.seriesGroup.join()
 
-  generated.ageRating = GeneratedAgeRating.fromValue(this.ageRating.value)
+  generated.ageRating = this.ageRating?.let { GeneratedAgeRating.fromValue(it.value) }
 
   if (this.pages.isNotEmpty()) {
     val pageArray = ArrayOfComicPageInfo()
@@ -81,14 +80,19 @@ fun ComicInfo.toGeneratedComicInfo(): GeneratedComicInfo {
       val genPage =
           GeneratedComicPageInfo().apply {
             this.image = page.image
-            this.type.add(page.type.value)
-            this.isDoublePage = page.doublePage
-            this.imageSize = page.imageSize
+            // Type: omit if null (XSD default = "Story")
+            page.type?.let { this.type.add(it.value) }
+            // DoublePage: omit if null or false (XSD default = false)
+            if (page.doublePage == true) {
+              this.isDoublePage = true
+            }
+            // ImageSize: set only if not null
+            page.imageSize?.let { this.imageSize = it }
             this.key = page.key
             this.bookmark = page.bookmark
-            // Convert null to XSD default value -1
-            this.imageWidth = page.imageWidth ?: -1
-            this.imageHeight = page.imageHeight ?: -1
+            // Dimensions: set only if not null
+            page.imageWidth?.let { this.imageWidth = it }
+            page.imageHeight?.let { this.imageHeight = it }
           }
       pageArray.page.add(genPage)
     }
@@ -96,6 +100,7 @@ fun ComicInfo.toGeneratedComicInfo(): GeneratedComicInfo {
   }
 
   generated.communityRating = this.communityRating?.toBigDecimal()
+
   generated.mainCharacterOrTeam = this.mainCharacterOrTeam
   generated.review = this.review
   generated.gtin = this.gtin
@@ -124,7 +129,7 @@ fun GeneratedComicInfo.toComicInfo(): ComicInfo {
       title = this.title,
       series = this.series,
       number = this.number,
-      // Convert XSD default value -1 to null
+      // Integers: convert XSD default -1 to null
       count = this.count?.takeIf { it > 0 },
       volume = this.volume?.takeIf { it > 0 },
       alternateSeries = this.alternateSeries,
@@ -146,12 +151,12 @@ fun GeneratedComicInfo.toComicInfo(): ComicInfo {
       genre = this.genre.toList(),
       tags = this.tags.toList(),
       web = this.web.toList(' '),
-      // PageCount: 0 is a valid value, so use it as is
-      pageCount = this.pageCount?.let { if (it >= 0) it else 0 } ?: 0,
+      pageCount = this.pageCount?.let { if (it >= 0) it else 0 } ?: 0, // 0 is valid
       languageISO = this.languageISO,
       format = this.format,
-      blackAndWhite = YesNo.fromValue(this.blackAndWhite?.value()),
-      manga = Manga.fromValue(this.manga?.value()),
+      // Enums: keep null if not present (no UNKNOWN fallback)
+      blackAndWhite = this.blackAndWhite?.value()?.let { YesNo.fromValue(it) },
+      manga = this.manga?.value()?.let { Manga.fromValue(it) },
       characters = this.characters.toList(),
       teams = this.teams.toList(),
       locations = this.locations.toList(),
@@ -159,17 +164,20 @@ fun GeneratedComicInfo.toComicInfo(): ComicInfo {
       storyArc = this.storyArc.toList(),
       storyArcNumber = this.storyArcNumber.toList(),
       seriesGroup = this.seriesGroup.toList(),
-      ageRating = AgeRating.fromValue(this.ageRating?.value()),
+      ageRating = this.ageRating?.value()?.let { AgeRating.fromValue(it) },
       pages =
           this.pages?.page?.map { genPage ->
             ComicPage(
                 image = genPage.image,
-                type = ComicPageType.fromValue(genPage.type.firstOrNull()),
-                doublePage = genPage.isDoublePage,
-                imageSize = genPage.imageSize,
+                // Type: keep null if empty (XSD default = "Story")
+                type = genPage.type.firstOrNull()?.let { ComicPageType.fromValue(it) },
+                // DoublePage: convert false to null (XSD default = false)
+                doublePage = if (genPage.isDoublePage) true else null,
+                // ImageSize: keep null if <= 0
+                imageSize = genPage.imageSize.takeIf { it > 0 },
                 key = genPage.key,
                 bookmark = genPage.bookmark,
-                // Convert XSD default value -1 to null
+                // Dimensions: convert -1 to null
                 imageWidth = genPage.imageWidth.takeIf { it > 0 },
                 imageHeight = genPage.imageHeight.takeIf { it > 0 },
             )

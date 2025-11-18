@@ -81,4 +81,41 @@ class ComicBookTest {
     )
     assertEquals("Page 1", comicBook.info.pages[1].bookmark)
   }
+
+  @Test
+  fun `create should merge metadata but keep generated dimensions`() {
+    val image = TestHelper.createImageFile(tempDir, "custom.jpg", 640, 480)
+    val baseInfo =
+        ComicInfo(
+            title = "Merge",
+            pages =
+                listOf(
+                    io.github.broot5.komicinfo.model.ComicPage(
+                        image = 0,
+                        type = io.github.broot5.komicinfo.model.ComicPageType.BACK_COVER,
+                        doublePage = true,
+                        imageSize = 1234L,
+                        key = "custom-key",
+                        bookmark = "Bookmark",
+                        imageWidth = 10,
+                        imageHeight = 20,
+                    ),
+                ),
+        )
+
+    val comicBook =
+        ComicBook.create(baseInfo, listOf(image)) { page, _ ->
+          page.copy(bookmark = page.bookmark?.uppercase())
+        }
+
+    assertEquals(1, comicBook.info.pageCount)
+    val mergedPage = comicBook.info.pages.single()
+    assertEquals(io.github.broot5.komicinfo.model.ComicPageType.BACK_COVER, mergedPage.type)
+    assertTrue(mergedPage.doublePage!!)
+    assertEquals("custom-key", mergedPage.key)
+    assertEquals("BOOKMARK", mergedPage.bookmark)
+    assertEquals(640, mergedPage.imageWidth)
+    assertEquals(480, mergedPage.imageHeight)
+    assertEquals(image.length(), mergedPage.imageSize)
+  }
 }

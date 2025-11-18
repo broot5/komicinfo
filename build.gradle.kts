@@ -2,6 +2,8 @@ plugins {
   kotlin("jvm") version "2.2.20"
 
   kotlin("plugin.serialization") version "2.2.20"
+
+  id("maven-publish")
 }
 
 group = "io.github.broot5"
@@ -23,3 +25,15 @@ dependencies {
 tasks.test { useJUnitPlatform() }
 
 kotlin { jvmToolchain(21) }
+
+publishing {
+  publications {
+    create<MavenPublication>("maven") {
+      groupId = "io.github.broot5"
+      artifactId = project.name
+      version = project.version.toString()
+
+      from(components["java"])
+    }
+  }
+}

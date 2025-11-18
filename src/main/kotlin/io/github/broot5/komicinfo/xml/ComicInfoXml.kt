@@ -106,24 +106,23 @@ data class RatingXml(
   }
 }
 
-@Suppress("EnumEntryName")
 @Serializable
 enum class AgeRatingXml {
   Unknown,
-  `Adults Only 18+`,
-  `Early Childhood`,
+  @XmlSerialName(value = "Adults Only 18+") ADULTS_ONLY_18_PLUS,
+  @XmlSerialName(value = "Early Childhood") EARLY_CHILDHOOD,
   Everyone,
-  `Everyone 10+`,
+  @XmlSerialName(value = "Everyone 10+") EVERYONE_10_PLUS,
   G,
-  `Kids to Adults`,
+  @XmlSerialName(value = "Kids to Adults") KIDS_TO_ADULTS,
   M,
-  `MA15+`,
-  `Mature 17+`,
+  @XmlSerialName(value = "MA15+") MA15_PLUS,
+  @XmlSerialName(value = "Mature 17+") MATURE_17_PLUS,
   PG,
-  `R18+`,
-  `Rating Pending`,
+  @XmlSerialName(value = "R18+") R18_PLUS,
+  @XmlSerialName(value = "Rating Pending") RATING_PENDING,
   Teen,
-  `X18+`,
+  @XmlSerialName(value = "X18+") X18_PLUS,
 }
 
 @Serializable

@@ -181,39 +181,39 @@ private fun MangaXml?.toModel(): Manga? =
 
 private fun AgeRating?.toXml(): AgeRatingXml =
     when (this) {
-      AgeRating.ADULTS_ONLY_18_PLUS -> AgeRatingXml.`Adults Only 18+`
-      AgeRating.EARLY_CHILDHOOD -> AgeRatingXml.`Early Childhood`
+      AgeRating.ADULTS_ONLY_18_PLUS -> AgeRatingXml.ADULTS_ONLY_18_PLUS
+      AgeRating.EARLY_CHILDHOOD -> AgeRatingXml.EARLY_CHILDHOOD
       AgeRating.EVERYONE -> AgeRatingXml.Everyone
-      AgeRating.EVERYONE_10_PLUS -> AgeRatingXml.`Everyone 10+`
+      AgeRating.EVERYONE_10_PLUS -> AgeRatingXml.EVERYONE_10_PLUS
       AgeRating.G -> AgeRatingXml.G
-      AgeRating.KIDS_TO_ADULTS -> AgeRatingXml.`Kids to Adults`
+      AgeRating.KIDS_TO_ADULTS -> AgeRatingXml.KIDS_TO_ADULTS
       AgeRating.M -> AgeRatingXml.M
-      AgeRating.MA15_PLUS -> AgeRatingXml.`MA15+`
-      AgeRating.MATURE_17_PLUS -> AgeRatingXml.`Mature 17+`
+      AgeRating.MA15_PLUS -> AgeRatingXml.MA15_PLUS
+      AgeRating.MATURE_17_PLUS -> AgeRatingXml.MATURE_17_PLUS
       AgeRating.PG -> AgeRatingXml.PG
-      AgeRating.R18_PLUS -> AgeRatingXml.`R18+`
-      AgeRating.RATING_PENDING -> AgeRatingXml.`Rating Pending`
+      AgeRating.R18_PLUS -> AgeRatingXml.R18_PLUS
+      AgeRating.RATING_PENDING -> AgeRatingXml.RATING_PENDING
       AgeRating.TEEN -> AgeRatingXml.Teen
-      AgeRating.X18_PLUS -> AgeRatingXml.`X18+`
+      AgeRating.X18_PLUS -> AgeRatingXml.X18_PLUS
       else -> AgeRatingXml.Unknown
     }
 
 private fun AgeRatingXml?.toModel(): AgeRating? =
     when (this) {
-      AgeRatingXml.`Adults Only 18+` -> AgeRating.ADULTS_ONLY_18_PLUS
-      AgeRatingXml.`Early Childhood` -> AgeRating.EARLY_CHILDHOOD
+      AgeRatingXml.ADULTS_ONLY_18_PLUS -> AgeRating.ADULTS_ONLY_18_PLUS
+      AgeRatingXml.EARLY_CHILDHOOD -> AgeRating.EARLY_CHILDHOOD
       AgeRatingXml.Everyone -> AgeRating.EVERYONE
-      AgeRatingXml.`Everyone 10+` -> AgeRating.EVERYONE_10_PLUS
+      AgeRatingXml.EVERYONE_10_PLUS -> AgeRating.EVERYONE_10_PLUS
       AgeRatingXml.G -> AgeRating.G
-      AgeRatingXml.`Kids to Adults` -> AgeRating.KIDS_TO_ADULTS
+      AgeRatingXml.KIDS_TO_ADULTS -> AgeRating.KIDS_TO_ADULTS
       AgeRatingXml.M -> AgeRating.M
-      AgeRatingXml.`MA15+` -> AgeRating.MA15_PLUS
-      AgeRatingXml.`Mature 17+` -> AgeRating.MATURE_17_PLUS
+      AgeRatingXml.MA15_PLUS -> AgeRating.MA15_PLUS
+      AgeRatingXml.MATURE_17_PLUS -> AgeRating.MATURE_17_PLUS
       AgeRatingXml.PG -> AgeRating.PG
-      AgeRatingXml.`R18+` -> AgeRating.R18_PLUS
-      AgeRatingXml.`Rating Pending` -> AgeRating.RATING_PENDING
+      AgeRatingXml.R18_PLUS -> AgeRating.R18_PLUS
+      AgeRatingXml.RATING_PENDING -> AgeRating.RATING_PENDING
       AgeRatingXml.Teen -> AgeRating.TEEN
-      AgeRatingXml.`X18+` -> AgeRating.X18_PLUS
+      AgeRatingXml.X18_PLUS -> AgeRating.X18_PLUS
       else -> null
     }
 

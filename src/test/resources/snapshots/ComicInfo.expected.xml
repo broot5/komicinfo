@@ -1,0 +1,25 @@
+<?xml version='1.1' encoding='UTF-8' ?>
+<ComicInfo>
+  <Title>komicinfo #1</Title>
+  <Series>komicinfo</Series>
+  <Number>1</Number>
+  <Count>8</Count>
+  <Volume>1</Volume>
+  <Summary>Metadata used only for testing.</Summary>
+  <Notes>Generated for snapshot verification.</Notes>
+  <Writer>A,B</Writer>
+  <Publisher>Press</Publisher>
+  <Tags>space,adventure</Tags>
+  <Web>https://example.com https://example1.com</Web>
+  <PageCount>42</PageCount>
+  <LanguageISO>en</LanguageISO>
+  <BlackAndWhite>No</BlackAndWhite>
+  <Manga>No</Manga>
+  <AgeRating>Everyone 10+</AgeRating>
+  <Pages>
+    <Page Image="0" Type="FrontCover" Bookmark="Cover" ImageWidth="1200" ImageHeight="1800" />
+    <Page Image="1" Type="Story" Bookmark="Chapter 1" ImageWidth="1200" ImageHeight="1800" />
+    <Page Image="2" Type="Letters" Bookmark="Letters" ImageWidth="1200" ImageHeight="1800" />
+  </Pages>
+  <CommunityRating>4.5</CommunityRating>
+</ComicInfo>

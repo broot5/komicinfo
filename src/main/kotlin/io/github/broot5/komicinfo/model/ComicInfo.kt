@@ -1,5 +1,6 @@
 package io.github.broot5.komicinfo.model
 
+import java.math.BigDecimal
 import java.time.LocalDate
 
 data class ComicInfo(
@@ -41,7 +42,7 @@ data class ComicInfo(
     val seriesGroup: List<String> = emptyList(),
     val ageRating: AgeRating? = null,
     val pages: List<ComicPage> = emptyList(),
-    val communityRating: Float? = null,
+    val communityRating: BigDecimal? = null,
     val mainCharacterOrTeam: String? = null,
     val review: String? = null,
     val gtin: String? = null,

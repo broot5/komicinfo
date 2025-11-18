@@ -1,7 +1,7 @@
 plugins {
   kotlin("jvm") version "2.2.20"
 
-  id("org.unbroken-dome.xjc") version "2.0.0"
+  kotlin("plugin.serialization") version "2.2.20"
 }
 
 group = "io.github.broot5"
@@ -13,17 +13,13 @@ repositories { mavenCentral() }
 dependencies {
   testImplementation(kotlin("test"))
 
-  implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.4")
   implementation("org.apache.commons:commons-compress:1.28.0")
 
-  runtimeOnly("org.glassfish.jaxb:jaxb-runtime:4.0.6")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
+  implementation("io.github.pdvrieze.xmlutil:core:0.91.3")
+  implementation("io.github.pdvrieze.xmlutil:serialization:0.91.3")
 }
 
 tasks.test { useJUnitPlatform() }
 
 kotlin { jvmToolchain(21) }
-
-xjc {
-  xjcVersion.set("3.0")
-  srcDirName.set("resources/schema")
-}

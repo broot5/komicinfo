@@ -1,190 +1,248 @@
 package io.github.broot5.komicinfo
 
-import generated.ArrayOfComicPageInfo
 import io.github.broot5.komicinfo.model.*
+import io.github.broot5.komicinfo.xml.*
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
-import generated.AgeRating as GeneratedAgeRating
-import generated.ComicInfo as GeneratedComicInfo
-import generated.ComicPageInfo as GeneratedComicPageInfo
-import generated.Manga as GeneratedManga
-import generated.YesNo as GeneratedYesNo
 
 private fun String?.toList(delimiter: Char = ','): List<String> =
     this?.split(delimiter)?.map(String::trim)?.filter(String::isNotEmpty) ?: emptyList()
 
-private fun List<String>.join(delimiter: String = ","): String = this.joinToString(delimiter)
+private fun List<String>.joinOrNull(delimiter: String = ","): String? =
+    if (isEmpty()) null else joinToString(delimiter)
 
-fun ComicInfo.toGeneratedComicInfo(): GeneratedComicInfo {
-  val generated = GeneratedComicInfo()
+private fun String?.nullIfBlank(): String? = this?.takeIf { it.isNotBlank() }
 
-  generated.title = this.title
-  generated.series = this.series
-  generated.number = this.number
+fun ComicInfo.toComicInfoXml(): ComicInfoXml {
+  val pageContainer =
+      pages
+          .takeIf { it.isNotEmpty() }
+          ?.let { ArrayOfComicPageInfoXml(Page = it.map { page -> page.toXml() }) }
 
-  generated.count = this.count
-  generated.volume = this.volume
-
-  generated.alternateSeries = this.alternateSeries
-  generated.alternateNumber = this.alternateNumber
-
-  generated.alternateCount = this.alternateCount
-
-  generated.summary = this.summary
-  generated.notes = this.notes
-
-  if (this.date != null) {
-    generated.year = this.date.year
-    generated.month = this.date.monthValue
-    generated.day = this.date.dayOfMonth
-  }
-
-  if (this.writer.isNotEmpty()) generated.writer = this.writer.join()
-  if (this.penciller.isNotEmpty()) generated.penciller = this.penciller.join()
-  if (this.inker.isNotEmpty()) generated.inker = this.inker.join()
-  if (this.colorist.isNotEmpty()) generated.colorist = this.colorist.join()
-  if (this.letterer.isNotEmpty()) generated.letterer = this.letterer.join()
-  if (this.coverArtist.isNotEmpty()) generated.coverArtist = this.coverArtist.join()
-  if (this.editor.isNotEmpty()) generated.editor = this.editor.join()
-  if (this.translator.isNotEmpty()) generated.translator = this.translator.join()
-
-  generated.publisher = this.publisher
-  generated.imprint = this.imprint
-
-  if (this.genre.isNotEmpty()) generated.genre = this.genre.join()
-  if (this.tags.isNotEmpty()) generated.tags = this.tags.join()
-  if (this.web.isNotEmpty()) generated.web = this.web.join(" ")
-
-  generated.pageCount = this.pageCount // Always included (0 is valid)
-
-  generated.languageISO = this.languageISO
-  generated.format = this.format
-
-  generated.blackAndWhite = this.blackAndWhite?.let { GeneratedYesNo.fromValue(it.value) }
-  generated.manga = this.manga?.let { GeneratedManga.fromValue(it.value) }
-
-  if (this.characters.isNotEmpty()) generated.characters = this.characters.join()
-  if (this.teams.isNotEmpty()) generated.teams = this.teams.join()
-  if (this.locations.isNotEmpty()) generated.locations = this.locations.join()
-
-  generated.scanInformation = this.scanInformation
-
-  if (this.storyArc.isNotEmpty()) generated.storyArc = this.storyArc.join()
-  if (this.storyArcNumber.isNotEmpty()) generated.storyArcNumber = this.storyArcNumber.join()
-  if (this.seriesGroup.isNotEmpty()) generated.seriesGroup = this.seriesGroup.join()
-
-  generated.ageRating = this.ageRating?.let { GeneratedAgeRating.fromValue(it.value) }
-
-  if (this.pages.isNotEmpty()) {
-    val pageArray = ArrayOfComicPageInfo()
-    this.pages.forEach { page ->
-      val genPage =
-          GeneratedComicPageInfo().apply {
-            this.image = page.image
-            // Type: omit if null (XSD default = "Story")
-            page.type?.let { this.type.add(it.value) }
-            // DoublePage: omit if null or false (XSD default = false)
-            if (page.doublePage == true) {
-              this.isDoublePage = true
-            }
-            // ImageSize: set only if not null
-            page.imageSize?.let { this.imageSize = it }
-            this.key = page.key
-            this.bookmark = page.bookmark
-            // Dimensions: set only if not null
-            page.imageWidth?.let { this.imageWidth = it }
-            page.imageHeight?.let { this.imageHeight = it }
-          }
-      pageArray.page.add(genPage)
-    }
-    generated.pages = pageArray
-  }
-
-  generated.communityRating = this.communityRating?.toBigDecimal()
-
-  generated.mainCharacterOrTeam = this.mainCharacterOrTeam
-  generated.review = this.review
-  generated.gtin = this.gtin
-
-  return generated
+  return ComicInfoXml(
+      Title = title.nullIfBlank(),
+      Series = series.nullIfBlank(),
+      Number = number.nullIfBlank(),
+      Count = count?.takeIf { it > 0 },
+      Volume = volume?.takeIf { it > 0 },
+      AlternateSeries = alternateSeries.nullIfBlank(),
+      AlternateNumber = alternateNumber.nullIfBlank(),
+      AlternateCount = alternateCount?.takeIf { it > 0 },
+      Summary = summary.nullIfBlank(),
+      Notes = notes.nullIfBlank(),
+      Year = date?.year,
+      Month = date?.monthValue,
+      Day = date?.dayOfMonth,
+      Writer = writer.joinOrNull(),
+      Penciller = penciller.joinOrNull(),
+      Inker = inker.joinOrNull(),
+      Colorist = colorist.joinOrNull(),
+      Letterer = letterer.joinOrNull(),
+      CoverArtist = coverArtist.joinOrNull(),
+      Editor = editor.joinOrNull(),
+      Translator = translator.joinOrNull(),
+      Publisher = publisher.nullIfBlank(),
+      Imprint = imprint.nullIfBlank(),
+      Genre = genre.joinOrNull(),
+      Tags = tags.joinOrNull(),
+      Web = web.joinOrNull(" "),
+      PageCount = pageCount,
+      LanguageISO = languageISO.nullIfBlank(),
+      Format = format.nullIfBlank(),
+      BlackAndWhite = blackAndWhite?.toXml(),
+      Manga = manga?.toXml(),
+      Characters = characters.joinOrNull(),
+      Teams = teams.joinOrNull(),
+      Locations = locations.joinOrNull(),
+      ScanInformation = scanInformation.nullIfBlank(),
+      StoryArc = storyArc.joinOrNull(),
+      StoryArcNumber = storyArcNumber.joinOrNull(),
+      SeriesGroup = seriesGroup.joinOrNull(),
+      AgeRating = ageRating?.toXml(),
+      Pages = pageContainer,
+      CommunityRating = communityRating?.toRatingXml(),
+      MainCharacterOrTeam = mainCharacterOrTeam.nullIfBlank(),
+      Review = review.nullIfBlank(),
+      GTIN = gtin.nullIfBlank(),
+  )
 }
 
-fun GeneratedComicInfo.toComicInfo(): ComicInfo {
-  // Convert Year, Month, Day to LocalDate
+fun ComicInfoXml.toComicInfo(): ComicInfo {
   val date =
       runCatching {
-            if (
-                this.year != null &&
-                    this.month != null &&
-                    this.day != null &&
-                    this.year > 0 &&
-                    this.month > 0 &&
-                    this.day > 0
-            ) {
-              LocalDate.of(this.year, this.month, this.day)
+            if (Year != null && Month != null && Day != null) {
+              LocalDate.of(Year, Month, Day)
             } else null
           }
           .getOrNull()
 
   return ComicInfo(
-      title = this.title,
-      series = this.series,
-      number = this.number,
-      // Integers: convert XSD default -1 to null
-      count = this.count?.takeIf { it > 0 },
-      volume = this.volume?.takeIf { it > 0 },
-      alternateSeries = this.alternateSeries,
-      alternateNumber = this.alternateNumber,
-      alternateCount = this.alternateCount?.takeIf { it > 0 },
-      summary = this.summary,
-      notes = this.notes,
+      title = Title.nullIfBlank(),
+      series = Series.nullIfBlank(),
+      number = Number.nullIfBlank(),
+      count = Count?.takeIf { it > 0 },
+      volume = Volume?.takeIf { it > 0 },
+      alternateSeries = AlternateSeries.nullIfBlank(),
+      alternateNumber = AlternateNumber.nullIfBlank(),
+      alternateCount = AlternateCount?.takeIf { it > 0 },
+      summary = Summary.nullIfBlank(),
+      notes = Notes.nullIfBlank(),
       date = date,
-      writer = this.writer.toList(),
-      penciller = this.penciller.toList(),
-      inker = this.inker.toList(),
-      colorist = this.colorist.toList(),
-      letterer = this.letterer.toList(),
-      coverArtist = this.coverArtist.toList(),
-      editor = this.editor.toList(),
-      translator = this.translator.toList(),
-      publisher = this.publisher,
-      imprint = this.imprint,
-      genre = this.genre.toList(),
-      tags = this.tags.toList(),
-      web = this.web.toList(' '),
-      pageCount = this.pageCount?.let { if (it >= 0) it else 0 } ?: 0, // 0 is valid
-      languageISO = this.languageISO,
-      format = this.format,
-      // Enums: keep null if not present (no UNKNOWN fallback)
-      blackAndWhite = this.blackAndWhite?.value()?.let { YesNo.fromValue(it) },
-      manga = this.manga?.value()?.let { Manga.fromValue(it) },
-      characters = this.characters.toList(),
-      teams = this.teams.toList(),
-      locations = this.locations.toList(),
-      scanInformation = this.scanInformation,
-      storyArc = this.storyArc.toList(),
-      storyArcNumber = this.storyArcNumber.toList(),
-      seriesGroup = this.seriesGroup.toList(),
-      ageRating = this.ageRating?.value()?.let { AgeRating.fromValue(it) },
-      pages =
-          this.pages?.page?.map { genPage ->
-            ComicPage(
-                image = genPage.image,
-                // Type: keep null if empty (XSD default = "Story")
-                type = genPage.type.firstOrNull()?.let { ComicPageType.fromValue(it) },
-                // DoublePage: convert false to null (XSD default = false)
-                doublePage = if (genPage.isDoublePage) true else null,
-                // ImageSize: keep null if <= 0
-                imageSize = genPage.imageSize.takeIf { it > 0 },
-                key = genPage.key,
-                bookmark = genPage.bookmark,
-                // Dimensions: convert -1 to null
-                imageWidth = genPage.imageWidth.takeIf { it > 0 },
-                imageHeight = genPage.imageHeight.takeIf { it > 0 },
-            )
-          } ?: emptyList(),
-      communityRating = this.communityRating?.toFloat(),
-      mainCharacterOrTeam = this.mainCharacterOrTeam,
-      review = this.review,
-      gtin = this.gtin,
+      writer = Writer.toList(),
+      penciller = Penciller.toList(),
+      inker = Inker.toList(),
+      colorist = Colorist.toList(),
+      letterer = Letterer.toList(),
+      coverArtist = CoverArtist.toList(),
+      editor = Editor.toList(),
+      translator = Translator.toList(),
+      publisher = Publisher.nullIfBlank(),
+      imprint = Imprint.nullIfBlank(),
+      genre = Genre.toList(),
+      tags = Tags.toList(),
+      web = Web.toList(' '),
+      pageCount = PageCount,
+      languageISO = LanguageISO.nullIfBlank(),
+      format = Format.nullIfBlank(),
+      blackAndWhite = BlackAndWhite.toModel(),
+      manga = Manga.toModel(),
+      characters = Characters.toList(),
+      teams = Teams.toList(),
+      locations = Locations.toList(),
+      scanInformation = ScanInformation.nullIfBlank(),
+      storyArc = StoryArc.toList(),
+      storyArcNumber = StoryArcNumber.toList(),
+      seriesGroup = SeriesGroup.toList(),
+      ageRating = AgeRating.toModel(),
+      pages = Pages?.Page?.map { it.toModel() } ?: emptyList(),
+      communityRating = CommunityRating?.value,
+      mainCharacterOrTeam = MainCharacterOrTeam.nullIfBlank(),
+      review = Review.nullIfBlank(),
+      gtin = GTIN.nullIfBlank(),
   )
 }
+
+private fun ComicPage.toXml(): ComicPageInfoXml =
+    ComicPageInfoXml(
+        Image = image,
+        Type = type?.toXml(),
+        DoublePage = doublePage,
+        ImageSize = imageSize,
+        Key = key.nullIfBlank(),
+        Bookmark = bookmark.nullIfBlank(),
+        ImageWidth = imageWidth,
+        ImageHeight = imageHeight,
+    )
+
+private fun ComicPageInfoXml.toModel(): ComicPage =
+    ComicPage(
+        image = Image,
+        type = Type?.toModel(),
+        doublePage = DoublePage,
+        imageSize = ImageSize,
+        key = Key.nullIfBlank(),
+        bookmark = Bookmark.nullIfBlank(),
+        imageWidth = ImageWidth,
+        imageHeight = ImageHeight,
+    )
+
+private fun YesNo?.toXml(): YesNoXml =
+    when (this) {
+      YesNo.YES -> YesNoXml.Yes
+      YesNo.NO -> YesNoXml.No
+      else -> YesNoXml.Unknown
+    }
+
+private fun YesNoXml?.toModel(): YesNo? =
+    when (this) {
+      YesNoXml.Yes -> YesNo.YES
+      YesNoXml.No -> YesNo.NO
+      else -> null
+    }
+
+private fun Manga?.toXml(): MangaXml =
+    when (this) {
+      Manga.YES -> MangaXml.Yes
+      Manga.NO -> MangaXml.No
+      Manga.YES_AND_RIGHT_TO_LEFT -> MangaXml.YesAndRightToLeft
+      else -> MangaXml.Unknown
+    }
+
+private fun MangaXml?.toModel(): Manga? =
+    when (this) {
+      MangaXml.Yes -> Manga.YES
+      MangaXml.No -> Manga.NO
+      MangaXml.YesAndRightToLeft -> Manga.YES_AND_RIGHT_TO_LEFT
+      else -> null
+    }
+
+private fun AgeRating?.toXml(): AgeRatingXml =
+    when (this) {
+      AgeRating.ADULTS_ONLY_18_PLUS -> AgeRatingXml.ADULTS_ONLY_18_PLUS
+      AgeRating.EARLY_CHILDHOOD -> AgeRatingXml.EARLY_CHILDHOOD
+      AgeRating.EVERYONE -> AgeRatingXml.Everyone
+      AgeRating.EVERYONE_10_PLUS -> AgeRatingXml.EVERYONE_10_PLUS
+      AgeRating.G -> AgeRatingXml.G
+      AgeRating.KIDS_TO_ADULTS -> AgeRatingXml.KIDS_TO_ADULTS
+      AgeRating.M -> AgeRatingXml.M
+      AgeRating.MA15_PLUS -> AgeRatingXml.MA15_PLUS
+      AgeRating.MATURE_17_PLUS -> AgeRatingXml.MATURE_17_PLUS
+      AgeRating.PG -> AgeRatingXml.PG
+      AgeRating.R18_PLUS -> AgeRatingXml.R18_PLUS
+      AgeRating.RATING_PENDING -> AgeRatingXml.RATING_PENDING
+      AgeRating.TEEN -> AgeRatingXml.Teen
+      AgeRating.X18_PLUS -> AgeRatingXml.X18_PLUS
+      else -> AgeRatingXml.Unknown
+    }
+
+private fun AgeRatingXml?.toModel(): AgeRating? =
+    when (this) {
+      AgeRatingXml.ADULTS_ONLY_18_PLUS -> AgeRating.ADULTS_ONLY_18_PLUS
+      AgeRatingXml.EARLY_CHILDHOOD -> AgeRating.EARLY_CHILDHOOD
+      AgeRatingXml.Everyone -> AgeRating.EVERYONE
+      AgeRatingXml.EVERYONE_10_PLUS -> AgeRating.EVERYONE_10_PLUS
+      AgeRatingXml.G -> AgeRating.G
+      AgeRatingXml.KIDS_TO_ADULTS -> AgeRating.KIDS_TO_ADULTS
+      AgeRatingXml.M -> AgeRating.M
+      AgeRatingXml.MA15_PLUS -> AgeRating.MA15_PLUS
+      AgeRatingXml.MATURE_17_PLUS -> AgeRating.MATURE_17_PLUS
+      AgeRatingXml.PG -> AgeRating.PG
+      AgeRatingXml.R18_PLUS -> AgeRating.R18_PLUS
+      AgeRatingXml.RATING_PENDING -> AgeRating.RATING_PENDING
+      AgeRatingXml.Teen -> AgeRating.TEEN
+      AgeRatingXml.X18_PLUS -> AgeRating.X18_PLUS
+      else -> null
+    }
+
+private fun ComicPageType?.toXml(): ComicPageTypeXml =
+    when (this) {
+      ComicPageType.FRONT_COVER -> ComicPageTypeXml.FrontCover
+      ComicPageType.INNER_COVER -> ComicPageTypeXml.InnerCover
+      ComicPageType.ROUNDUP -> ComicPageTypeXml.Roundup
+      ComicPageType.ADVERTISEMENT -> ComicPageTypeXml.Advertisement
+      ComicPageType.EDITORIAL -> ComicPageTypeXml.Editorial
+      ComicPageType.LETTERS -> ComicPageTypeXml.Letters
+      ComicPageType.PREVIEW -> ComicPageTypeXml.Preview
+      ComicPageType.BACK_COVER -> ComicPageTypeXml.BackCover
+      ComicPageType.OTHER -> ComicPageTypeXml.Other
+      ComicPageType.DELETED -> ComicPageTypeXml.Deleted
+      else -> ComicPageTypeXml.Story
+    }
+
+private fun ComicPageTypeXml.toModel(): ComicPageType =
+    when (this) {
+      ComicPageTypeXml.FrontCover -> ComicPageType.FRONT_COVER
+      ComicPageTypeXml.InnerCover -> ComicPageType.INNER_COVER
+      ComicPageTypeXml.Roundup -> ComicPageType.ROUNDUP
+      ComicPageTypeXml.Story -> ComicPageType.STORY
+      ComicPageTypeXml.Advertisement -> ComicPageType.ADVERTISEMENT
+      ComicPageTypeXml.Editorial -> ComicPageType.EDITORIAL
+      ComicPageTypeXml.Letters -> ComicPageType.LETTERS
+      ComicPageTypeXml.Preview -> ComicPageType.PREVIEW
+      ComicPageTypeXml.BackCover -> ComicPageType.BACK_COVER
+      ComicPageTypeXml.Other -> ComicPageType.OTHER
+      ComicPageTypeXml.Deleted -> ComicPageType.DELETED
+    }
+
+private fun BigDecimal.toRatingXml(): RatingXml = RatingXml(this.setScale(1, RoundingMode.HALF_UP))

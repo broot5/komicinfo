@@ -2,15 +2,14 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.exceptions.ComicBookWriteException
-import jakarta.xml.bind.JAXBContext
-import jakarta.xml.bind.JAXBElement
-import jakarta.xml.bind.JAXBException
-import jakarta.xml.bind.Marshaller
+import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
+import nl.adaptivity.xmlutil.XmlException
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
-import java.io.*
-import javax.xml.namespace.QName
-import generated.ComicInfo as GeneratedComicInfo
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 object ComicBookWriter {
   /**
@@ -66,26 +65,10 @@ object ComicBookWriter {
   }
 
   private fun writeToFile(comicBook: ComicBook, file: File) {
-    val generatedComicInfo = comicBook.info.toGeneratedComicInfo()
+    val comicInfoXml = comicBook.info.toComicInfoXml()
 
     try {
-      val jaxbContext = JAXBContext.newInstance(GeneratedComicInfo::class.java)
-      val marshaller =
-          jaxbContext.createMarshaller().apply {
-            setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-          }
-
-      val jaxbElement =
-          JAXBElement(
-              QName("ComicInfo"),
-              GeneratedComicInfo::class.java,
-              generatedComicInfo,
-          )
-
-      val stringWriter = StringWriter()
-      marshaller.marshal(jaxbElement, stringWriter)
-      val xmlString = stringWriter.toString()
-      val xmlBytes = xmlString.toByteArray(Charsets.UTF_8)
+      val xmlBytes = ComicInfoXmlCodec.encode(comicInfoXml)
 
       ZipArchiveOutputStream(BufferedOutputStream(FileOutputStream(file))).use { zipStream ->
         // Write ComicInfo.xml
@@ -115,7 +98,7 @@ object ComicBookWriter {
 
         zipStream.finish()
       }
-    } catch (e: JAXBException) {
+    } catch (e: XmlException) {
       throw ComicBookWriteException(file.absolutePath, e)
     } catch (e: IOException) {
       throw ComicBookWriteException(file.absolutePath, e)

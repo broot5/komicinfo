@@ -8,15 +8,22 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
 import nl.adaptivity.xmlutil.serialization.XmlElement
+import nl.adaptivity.xmlutil.serialization.XmlNamespaceDeclSpecs
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 import java.math.BigDecimal
 import java.math.RoundingMode
 
+@OptIn(ExperimentalXmlUtilApi::class)
 @Suppress("PropertyName")
 @Serializable
 @XmlSerialName("ComicInfo")
+@XmlNamespaceDeclSpecs(
+    "xsd=http://www.w3.org/2001/XMLSchema",
+    "xsi=http://www.w3.org/2001/XMLSchema-instance",
+)
 data class ComicInfoXml(
     @XmlElement(true) val Title: String? = null,
     @XmlElement(true) val Series: String? = null,

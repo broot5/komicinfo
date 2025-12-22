@@ -5,14 +5,14 @@ import io.github.broot5.komicinfo.exceptions.ComicInfoNotFoundException
 import io.github.broot5.komicinfo.exceptions.InvalidComicBookFormatException
 import io.github.broot5.komicinfo.internal.putStoredEntry
 import io.github.broot5.komicinfo.model.ComicInfo
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import java.io.BufferedOutputStream
 import java.io.File
 import java.nio.file.Path
 import java.util.zip.ZipOutputStream
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 /** Tests for ComicBookReader functionality */
 class ComicBookReaderTest {

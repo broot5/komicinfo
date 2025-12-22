@@ -4,12 +4,12 @@ import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.exceptions.ComicBookWriteException
 import io.github.broot5.komicinfo.internal.putStoredEntry
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
-import nl.adaptivity.xmlutil.XmlException
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.zip.ZipOutputStream
+import nl.adaptivity.xmlutil.XmlException
 
 object ComicBookWriter {
   /**

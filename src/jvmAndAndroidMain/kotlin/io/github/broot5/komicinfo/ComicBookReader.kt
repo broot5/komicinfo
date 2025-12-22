@@ -3,11 +3,11 @@ package io.github.broot5.komicinfo
 import io.github.broot5.komicinfo.exceptions.*
 import io.github.broot5.komicinfo.model.ComicInfo
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
-import kotlinx.serialization.SerializationException
-import nl.adaptivity.xmlutil.XmlException
 import java.io.File
 import java.io.IOException
 import java.util.zip.ZipFile
+import kotlinx.serialization.SerializationException
+import nl.adaptivity.xmlutil.XmlException
 
 object ComicBookReader {
   private val SUPPORTED_EXTENSIONS = listOf("cbz", "zip")

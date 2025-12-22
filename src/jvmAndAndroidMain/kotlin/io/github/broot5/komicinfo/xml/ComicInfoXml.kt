@@ -1,5 +1,7 @@
 package io.github.broot5.komicinfo.xml
 
+import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,8 +15,6 @@ import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlNamespaceDeclSpecs
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
-import java.math.BigDecimal
-import java.math.RoundingMode
 
 @OptIn(ExperimentalXmlUtilApi::class)
 @Suppress("PropertyName")

@@ -2,10 +2,10 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.model.ComicInfo
+import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 
 /** Tests for ComicBookWriter functionality */
 class ComicBookWriterTest {

@@ -2,12 +2,12 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.model.*
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class ComicInfoSnapshotTest {
   private val actualPath: Path = Path.of("build", "test-snapshots", "ComicInfo.actual.xml")

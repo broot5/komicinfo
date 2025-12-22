@@ -2,10 +2,10 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.model.*
 import io.github.broot5.komicinfo.xml.*
+import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
 
 class ComicInfoMapperTest {
   @Test

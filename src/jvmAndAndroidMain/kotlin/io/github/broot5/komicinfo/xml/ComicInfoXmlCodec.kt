@@ -1,12 +1,12 @@
 package io.github.broot5.komicinfo.xml
 
+import java.io.Reader
+import java.nio.charset.Charset
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.XML
-import java.io.Reader
-import java.nio.charset.Charset
 
 internal object ComicInfoXmlCodec {
   private val xml: XML = XML {

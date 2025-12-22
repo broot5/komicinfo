@@ -1,10 +1,10 @@
 package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.model.ComicInfo
+import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 
 /** Tests for ComicBook creation and image processing */
 class ComicBookTest {

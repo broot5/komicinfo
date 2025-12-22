@@ -2,9 +2,10 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.model.*
 import io.github.broot5.komicinfo.xml.*
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.LocalDate
 
 private fun String?.toList(delimiter: Char = ','): List<String> =
     this?.split(delimiter)?.map(String::trim)?.filter(String::isNotEmpty) ?: emptyList()
@@ -32,8 +33,8 @@ fun ComicInfo.toComicInfoXml(): ComicInfoXml {
       Summary = summary.nullIfBlank(),
       Notes = notes.nullIfBlank(),
       Year = date?.year,
-      Month = date?.monthValue,
-      Day = date?.dayOfMonth,
+      Month = date?.month?.number,
+      Day = date?.day,
       Writer = writer.joinOrNull(),
       Penciller = penciller.joinOrNull(),
       Inker = inker.joinOrNull(),
@@ -72,7 +73,7 @@ fun ComicInfoXml.toComicInfo(): ComicInfo {
   val date =
       runCatching {
             if (Year != null && Month != null && Day != null) {
-              LocalDate.of(Year, Month, Day)
+              LocalDate(Year, Month, Day)
             } else null
           }
           .getOrNull()

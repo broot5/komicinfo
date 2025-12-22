@@ -3,15 +3,16 @@ package io.github.broot5.komicinfo
 import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.exceptions.ComicInfoNotFoundException
 import io.github.broot5.komicinfo.exceptions.InvalidComicBookFormatException
+import io.github.broot5.komicinfo.internal.putStoredEntry
 import io.github.broot5.komicinfo.model.ComicInfo
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.BufferedOutputStream
 import java.io.File
 import java.nio.file.Path
+import java.util.zip.ZipOutputStream
 
 /** Tests for ComicBookReader functionality */
 class ComicBookReaderTest {
@@ -32,11 +33,8 @@ class ComicBookReaderTest {
 
     // Create a CBZ file without ComicInfo.xml
     noInfoCbzFile = tempDir.resolve("no_info.cbz").toFile()
-    ZipArchiveOutputStream(noInfoCbzFile).use { zipStream ->
-      val entry = ZipArchiveEntry(dummyImage.name)
-      zipStream.putArchiveEntry(entry)
-      dummyImage.inputStream().use { it.copyTo(zipStream) }
-      zipStream.closeArchiveEntry()
+    ZipOutputStream(BufferedOutputStream(noInfoCbzFile.outputStream())).use { zipStream ->
+      zipStream.putStoredEntry(dummyImage.name, dummyImage.readBytes())
     }
   }
 

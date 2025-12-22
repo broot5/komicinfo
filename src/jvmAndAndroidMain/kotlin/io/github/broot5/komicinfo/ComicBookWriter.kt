@@ -2,14 +2,14 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.exceptions.ComicBookWriteException
+import io.github.broot5.komicinfo.internal.putStoredEntry
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
 import nl.adaptivity.xmlutil.XmlException
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.zip.ZipOutputStream
 
 object ComicBookWriter {
   /**
@@ -36,11 +36,18 @@ object ComicBookWriter {
       destination.parentFile?.mkdirs()
 
       // Use temporary file
+      val tmpDir =
+          destination.parentFile
+              ?: File(
+                  requireNotNull(System.getProperty("java.io.tmpdir")) {
+                    "System property 'java.io.tmpdir' is not set"
+                  }
+              )
       val tempFile =
           File.createTempFile(
               "komicinfo-",
               ".tmp",
-              destination.parentFile ?: File(System.getProperty("java.io.tmpdir")),
+              tmpDir,
           )
 
       try {
@@ -70,33 +77,14 @@ object ComicBookWriter {
     try {
       val xmlBytes = ComicInfoXmlCodec.encode(comicInfoXml)
 
-      ZipArchiveOutputStream(BufferedOutputStream(FileOutputStream(file))).use { zipStream ->
+      ZipOutputStream(BufferedOutputStream(FileOutputStream(file))).use { zipStream ->
         // Write ComicInfo.xml
-        val xmlEntry =
-            ZipArchiveEntry("ComicInfo.xml").apply {
-              method = ZipArchiveEntry.STORED
-              size = xmlBytes.size.toLong()
-              crc = java.util.zip.CRC32().apply { update(xmlBytes) }.value
-            }
-        zipStream.putArchiveEntry(xmlEntry)
-        zipStream.write(xmlBytes)
-        zipStream.closeArchiveEntry()
+        zipStream.putStoredEntry(name = "ComicInfo.xml", bytes = xmlBytes)
 
         // Write image files
         comicBook.imageFiles.forEach { imageFile ->
-          val imageBytes = imageFile.readBytes()
-          val imageEntry =
-              ZipArchiveEntry(imageFile.name).apply {
-                method = ZipArchiveEntry.STORED
-                size = imageBytes.size.toLong()
-                crc = java.util.zip.CRC32().apply { update(imageBytes) }.value
-              }
-          zipStream.putArchiveEntry(imageEntry)
-          zipStream.write(imageBytes)
-          zipStream.closeArchiveEntry()
+          zipStream.putStoredEntry(imageFile.name, imageFile.readBytes())
         }
-
-        zipStream.finish()
       }
     } catch (e: XmlException) {
       throw ComicBookWriteException(file.absolutePath, e)

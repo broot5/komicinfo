@@ -3,6 +3,8 @@
 A Kotlin library for reading and writing ComicBook archives (CBZ)
 with [ComicInfo.xml](https://anansi-project.github.io/docs/comicinfo/schemas/v2.1) metadata.
 
+This project is Kotlin Multiplatform (KMP) and publishes artifacts for **JVM** and **Android**.
+
 ## Features
 
 - **Read CBZ files** - Parse ComicInfo.xml metadata from CBZ archives
@@ -74,9 +76,9 @@ val comicBook = ComicBook.create(info, imageFiles) { page, file ->
 git clone https://github.com/broot5/komicinfo.git
 cd komicinfo
 
-# Build the project
+# Build
 ./gradlew build
 
-# Generate JAR
-./gradlew jar
+# Generate JVM JAR
+./gradlew jvmJar
 ```

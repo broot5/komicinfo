@@ -5,9 +5,9 @@ import io.github.broot5.komicinfo.model.ComicInfo
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
 import kotlinx.serialization.SerializationException
 import nl.adaptivity.xmlutil.XmlException
-import org.apache.commons.compress.archivers.zip.ZipFile
 import java.io.File
 import java.io.IOException
+import java.util.zip.ZipFile
 
 object ComicBookReader {
   private val SUPPORTED_EXTENSIONS = listOf("cbz", "zip")
@@ -38,7 +38,7 @@ object ComicBookReader {
 
       // Parse ComicInfo.xml
       try {
-        ZipFile.builder().setFile(file).get().use { zipFile ->
+        ZipFile(file).use { zipFile ->
           val comicInfoEntry =
               zipFile.getEntry("ComicInfo.xml") ?: throw ComicInfoNotFoundException(file.name)
 

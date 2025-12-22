@@ -2,16 +2,14 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.model.*
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class ComicInfoSnapshotTest {
-  private val snapshotPath: Path =
-      Path.of("src", "test", "resources", "snapshots", "ComicInfo.expected.xml")
   private val actualPath: Path = Path.of("build", "test-snapshots", "ComicInfo.actual.xml")
 
   @Test
@@ -22,7 +20,11 @@ class ComicInfoSnapshotTest {
     Files.createDirectories(actualPath.parent)
     Files.writeString(actualPath, xmlString, StandardCharsets.UTF_8)
 
-    val expected = Files.readString(snapshotPath, StandardCharsets.UTF_8)
+    val expected =
+        requireNotNull(javaClass.getResource("/snapshots/ComicInfo.expected.xml")) {
+              "Missing test resource: /snapshots/ComicInfo.expected.xml"
+            }
+            .readText(StandardCharsets.UTF_8)
 
     assertEquals(
         expected.normalizeLineEndings().trim(),

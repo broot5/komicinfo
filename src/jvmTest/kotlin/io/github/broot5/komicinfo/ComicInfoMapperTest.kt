@@ -2,11 +2,10 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.model.*
 import io.github.broot5.komicinfo.xml.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class ComicInfoMapperTest {
   @Test
@@ -43,7 +42,7 @@ class ComicInfoMapperTest {
     assertEquals(1, xml.PageCount)
     assertEquals(BigDecimal("4.6"), xml.CommunityRating?.value)
 
-    val pageXml = assertNotNull(xml.Pages).Page.single()
+    val pageXml = requireNotNull(xml.Pages).Page.single()
     assertEquals(0, pageXml.Image)
     assertEquals(ComicPageTypeXml.FrontCover, pageXml.Type)
     assertNull(pageXml.Bookmark)

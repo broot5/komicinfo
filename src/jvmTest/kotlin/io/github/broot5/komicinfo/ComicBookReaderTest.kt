@@ -34,7 +34,7 @@ class ComicBookReaderTest {
     // Create a CBZ file without ComicInfo.xml
     noInfoCbzFile = tempDir.resolve("no_info.cbz").toFile()
     ZipOutputStream(BufferedOutputStream(noInfoCbzFile.outputStream())).use { zipStream ->
-      zipStream.putStoredEntry(name = dummyImage.name) { dummyImage.inputStream() }
+      zipStream.putStoredEntry(dummyImage.name, dummyImage.readBytes())
     }
   }
 

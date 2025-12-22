@@ -1,7 +1,7 @@
 package io.github.broot5.komicinfo.model
 
-import java.math.BigDecimal
 import kotlinx.datetime.LocalDate
+import java.math.BigDecimal
 
 data class ComicInfo(
     val title: String? = null,

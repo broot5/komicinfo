@@ -38,7 +38,11 @@ object ComicBookWriter {
       // Use temporary file
       val tmpDir =
           destination.parentFile
-              ?: File(requireNotNull(System.getProperty("java.io.tmpdir")) { "java.io.tmpdir" })
+              ?: File(
+                  requireNotNull(System.getProperty("java.io.tmpdir")) {
+                    "System property 'java.io.tmpdir' is not set"
+                  }
+              )
       val tempFile =
           File.createTempFile(
               "komicinfo-",
@@ -79,7 +83,7 @@ object ComicBookWriter {
 
         // Write image files
         comicBook.imageFiles.forEach { imageFile ->
-          zipStream.putStoredEntry(name = imageFile.name) { imageFile.inputStream() }
+          zipStream.putStoredEntry(imageFile.name, imageFile.readBytes())
         }
       }
     } catch (e: XmlException) {

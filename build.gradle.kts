@@ -75,7 +75,10 @@ kotlin {
   }
 }
 
-tasks.withType<Test>().configureEach { useJUnitPlatform() }
+tasks.withType<Test>().configureEach {
+  useJUnitPlatform()
+  systemProperty("java.awt.headless", "true")
+}
 
 publishing {
   publications {

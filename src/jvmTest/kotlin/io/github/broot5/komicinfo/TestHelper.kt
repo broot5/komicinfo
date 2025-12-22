@@ -34,7 +34,6 @@ object TestHelper {
 
     graphics.color = Color.BLUE
     graphics.drawRect(10, 10, width - 20, height - 20)
-    graphics.drawString(filename, 50, 50)
 
     graphics.dispose()
 

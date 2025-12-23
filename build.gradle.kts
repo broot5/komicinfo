@@ -4,7 +4,7 @@ plugins {
   kotlin("multiplatform") version "2.2.20"
   kotlin("plugin.serialization") version "2.2.20"
   id("com.android.library") version "8.13.2"
-  id("maven-publish")
+  id("com.vanniktech.maven.publish") version "0.35.0"
 }
 
 group = "io.github.broot5"
@@ -80,11 +80,39 @@ tasks.withType<Test>().configureEach {
   systemProperty("java.awt.headless", "true")
 }
 
-publishing {
-  publications {
-    withType<MavenPublication>().configureEach {
-      groupId = "io.github.broot5"
-      version = project.version.toString()
+mavenPublishing {
+  publishToMavenCentral()
+  signAllPublications()
+
+  coordinates(group.toString(), "komicinfo", version.toString())
+
+  pom {
+    name = "komicinfo"
+    description =
+        "A Kotlin library for reading and writing ComicBook archives (CBZ) with ComicInfo.xml metadata."
+    inceptionYear = "2025"
+    url = "https://github.com/broot5/komicinfo"
+
+    licenses {
+      license {
+        name = "MIT License"
+        url = "https://opensource.org/licenses/MIT"
+        distribution = "https://opensource.org/licenses/MIT"
+      }
+    }
+
+    developers {
+      developer {
+        id = "broot5"
+        name = "broot5"
+        url = "https://github.com/broot5"
+      }
+    }
+
+    scm {
+      url = "https://github.com/broot5/komicinfo"
+      connection = "scm:git:git://github.com/broot5/komicinfo.git"
+      developerConnection = "scm:git:ssh://git@github.com:broot5/komicinfo.git"
     }
   }
 }

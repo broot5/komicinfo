@@ -16,12 +16,14 @@ object ComicBookReader {
    * Reads ComicInfo metadata from a CBZ archive file.
    *
    * @param file The CBZ archive file to read
-   * @return Result containing ComicInfo on success, or exception details on failure
-   * @throws ComicBookFileNotFoundException if the file doesn't exist
-   * @throws InvalidComicBookFormatException if the file format is not supported
-   * @throws ComicInfoNotFoundException if ComicInfo.xml is not found in the archive
-   * @throws ComicInfoParseException if ComicInfo.xml cannot be parsed
-   * @throws CorruptedArchiveException if the archive is corrupted or cannot be read
+   * @return [Result] containing [ComicInfo] on success.
+   *
+   * On failure, returns `Result.failure(exception)` where `exception` is typically one of:
+   * - [ComicBookFileNotFoundException] if the file doesn't exist
+   * - [InvalidComicBookFormatException] if the file format is not supported
+   * - [ComicInfoNotFoundException] if ComicInfo.xml is not found in the archive
+   * - [ComicInfoParseException] if ComicInfo.xml cannot be parsed
+   * - [CorruptedArchiveException] if the archive is corrupted or cannot be read
    */
   fun read(file: File): Result<ComicInfo> {
     return runCatching {

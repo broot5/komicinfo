@@ -18,9 +18,11 @@ object ComicBookWriter {
    *
    * @param comicBook The ComicBook to write
    * @param destination The target file path for the CBZ archive
-   * @return Result containing the destination file on success, or exception details on failure
-   * @throws ComicBookFileNotFoundException if any image file doesn't exist
-   * @throws ComicBookWriteException if writing fails
+   * @return [Result] containing the destination [File] on success.
+   *
+   * On failure, returns `Result.failure(exception)` where `exception` is typically one of:
+   * - [ComicBookFileNotFoundException] if any image file doesn't exist
+   * - [ComicBookWriteException] if writing fails
    */
   fun write(comicBook: ComicBook, destination: File): Result<File> {
     return runCatching {

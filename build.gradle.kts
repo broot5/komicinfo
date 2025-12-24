@@ -9,7 +9,7 @@ plugins {
 
 group = "io.github.broot5"
 
-version = "1.0.0"
+version = "1.0.1"
 
 android {
   namespace = "io.github.broot5.komicinfo"

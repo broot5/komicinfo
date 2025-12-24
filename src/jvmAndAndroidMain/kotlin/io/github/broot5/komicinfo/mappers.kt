@@ -15,7 +15,7 @@ private fun List<String>.joinOrNull(delimiter: String = ","): String? =
 
 private fun String?.nullIfBlank(): String? = this?.takeIf { it.isNotBlank() }
 
-fun ComicInfo.toComicInfoXml(): ComicInfoXml {
+internal fun ComicInfo.toComicInfoXml(): ComicInfoXml {
   val pageContainer =
       pages
           .takeIf { it.isNotEmpty() }
@@ -69,7 +69,7 @@ fun ComicInfo.toComicInfoXml(): ComicInfoXml {
   )
 }
 
-fun ComicInfoXml.toComicInfo(): ComicInfo {
+internal fun ComicInfoXml.toComicInfo(): ComicInfo {
   val date =
       runCatching {
             if (Year != null && Month != null && Day != null) {

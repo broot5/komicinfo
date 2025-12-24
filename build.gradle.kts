@@ -64,10 +64,10 @@ kotlin {
 
     val jvmAndAndroidMain by getting {
       dependencies {
-        api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
         api("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
-        api("io.github.pdvrieze.xmlutil:core:0.91.3")
-        api("io.github.pdvrieze.xmlutil:serialization:0.91.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
+        implementation("io.github.pdvrieze.xmlutil:core:0.91.3")
+        implementation("io.github.pdvrieze.xmlutil:serialization:0.91.3")
       }
     }
 

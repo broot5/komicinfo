@@ -24,7 +24,7 @@ import nl.adaptivity.xmlutil.serialization.XmlValue
     "xsd=http://www.w3.org/2001/XMLSchema",
     "xsi=http://www.w3.org/2001/XMLSchema-instance",
 )
-data class ComicInfoXml(
+internal data class ComicInfoXml(
     @XmlElement(true) val Title: String? = null,
     @XmlElement(true) val Series: String? = null,
     @XmlElement(true) val Number: String? = null,
@@ -72,14 +72,14 @@ data class ComicInfoXml(
 )
 
 @Serializable
-enum class YesNoXml {
+internal enum class YesNoXml {
   Unknown,
   No,
   Yes,
 }
 
 @Serializable
-enum class MangaXml {
+internal enum class MangaXml {
   Unknown,
   No,
   Yes,
@@ -87,7 +87,7 @@ enum class MangaXml {
 }
 
 @Serializable
-data class RatingXml(
+internal data class RatingXml(
     @XmlValue @Serializable(with = BigDecimalAsStringSerializer::class) val value: BigDecimal
 ) {
   init {
@@ -114,7 +114,7 @@ data class RatingXml(
 }
 
 @Serializable
-enum class AgeRatingXml {
+internal enum class AgeRatingXml {
   Unknown,
   @SerialName("Adults Only 18+") ADULTS_ONLY_18_PLUS,
   @SerialName("Early Childhood") EARLY_CHILDHOOD,
@@ -134,7 +134,7 @@ enum class AgeRatingXml {
 
 @Serializable
 @XmlSerialName("ArrayOfComicPageInfo")
-data class ArrayOfComicPageInfoXml(
+internal data class ArrayOfComicPageInfoXml(
     @Suppress("PropertyName")
     @XmlElement(true)
     @XmlSerialName("Page")
@@ -143,7 +143,7 @@ data class ArrayOfComicPageInfoXml(
 
 @Suppress("PropertyName")
 @Serializable
-data class ComicPageInfoXml(
+internal data class ComicPageInfoXml(
     @SerialName("Image") val Image: Int,
     @XmlElement(false) @XmlSerialName("Type") val Type: ComicPageTypeXml? = null,
     @SerialName("DoublePage") val DoublePage: Boolean? = null,
@@ -155,7 +155,7 @@ data class ComicPageInfoXml(
 )
 
 @Serializable
-enum class ComicPageTypeXml {
+internal enum class ComicPageTypeXml {
   FrontCover,
   InnerCover,
   Roundup,

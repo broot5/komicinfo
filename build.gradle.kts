@@ -15,7 +15,7 @@ android {
   namespace = "io.github.broot5.komicinfo"
   compileSdk = 36
 
-  defaultConfig { minSdk = 21 }
+  defaultConfig { minSdk = 26 }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17

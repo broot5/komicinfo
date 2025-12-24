@@ -2,6 +2,7 @@ package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.exceptions.ComicBookWriteException
+import io.github.broot5.komicinfo.internal.AtomicReplace
 import io.github.broot5.komicinfo.internal.putStoredEntry
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
 import java.io.BufferedOutputStream
@@ -53,14 +54,8 @@ object ComicBookWriter {
       try {
         writeToFile(comicBook, tempFile)
 
-        // Atomic move
-        if (destination.exists()) {
-          destination.delete()
-        }
-        if (!tempFile.renameTo(destination)) {
-          tempFile.copyTo(destination, overwrite = true)
-          tempFile.delete()
-        }
+        // Atomic replacement
+        AtomicReplace.moveTempIntoPlace(tempFile, destination)
 
         destination
       } catch (e: Exception) {

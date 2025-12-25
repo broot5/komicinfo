@@ -1,6 +1,5 @@
 package io.github.broot5.komicinfo.xml
 
-import java.io.Reader
 import java.nio.charset.Charset
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -16,12 +15,14 @@ internal object ComicInfoXmlCodec {
     xmlVersion = XmlVersion.XML10
   }
 
-  fun encode(value: ComicInfoXml): ByteArray {
+  fun encode(value: ComicInfoXml, charset: Charset = defaultCharset()): ByteArray {
     val xmlString = xml.encodeToString(value)
-    return xmlString.toByteArray(Charsets.UTF_8)
+    return xmlString.toByteArray(charset)
   }
 
-  fun decode(reader: Reader): ComicInfoXml = xml.decodeFromString(reader.readText())
+  fun decode(bytes: ByteArray, charset: Charset = defaultCharset()): ComicInfoXml {
+    return xml.decodeFromString(String(bytes, charset))
+  }
 
   fun defaultCharset(): Charset = Charsets.UTF_8
 }

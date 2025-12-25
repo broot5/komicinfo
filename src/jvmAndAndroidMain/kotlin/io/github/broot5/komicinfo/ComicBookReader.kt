@@ -45,10 +45,9 @@ object ComicBookReader {
               zipFile.getEntry("ComicInfo.xml") ?: throw ComicInfoNotFoundException(file.name)
 
           try {
-            zipFile
-                .getInputStream(comicInfoEntry)
-                .bufferedReader(ComicInfoXmlCodec.defaultCharset())
-                .use { reader -> ComicInfoXmlCodec.decode(reader).toComicInfo() }
+            zipFile.getInputStream(comicInfoEntry).use { inputStream ->
+              ComicInfoXmlCodec.decode(inputStream.readBytes()).toComicInfo()
+            }
           } catch (e: XmlException) {
             throw ComicInfoParseException(e)
           } catch (e: SerializationException) {

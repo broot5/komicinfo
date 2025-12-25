@@ -14,7 +14,7 @@ data class ComicBook(
     /**
      * Builds a comic, blending existing metadata with file-derived sizes and dimensions.
      *
-     * @param baseInfo base ComicInfo whose per-page values win when present
+     * @param baseInfo base ComicInfo used as a source for semantic per-page metadata
      * @param imageFiles page images in reading order
      * @param pageBuilder hook to tweak each merged page before it is stored
      */
@@ -52,7 +52,12 @@ data class ComicBook(
   }
 }
 
-/** Prefer user metadata, but fill gaps with the generated values. */
+/**
+ * Merge page metadata from [existing] and [generated].
+ *
+ * Prefers user-provided semantic metadata, but prefers file-derived values (size/dimensions) when
+ * they can be computed from the actual image file.
+ */
 private fun mergePageMetadata(existing: ComicPage?, generated: ComicPage): ComicPage {
   if (existing == null) return generated
 

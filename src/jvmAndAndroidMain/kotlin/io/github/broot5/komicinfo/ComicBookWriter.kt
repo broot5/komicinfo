@@ -27,11 +27,9 @@ object ComicBookWriter {
   fun write(comicBook: ComicBook, destination: File): Result<File> {
     return runCatching {
       // Validate all image files exist before starting
-      comicBook.imageFiles.forEachIndexed { index, imageFile ->
+      comicBook.imageFiles.forEach { imageFile ->
         if (!imageFile.exists()) {
-          throw ComicBookFileNotFoundException(
-              "Image file #$index not found: ${imageFile.absolutePath}"
-          )
+          throw ComicBookFileNotFoundException(imageFile.absolutePath)
         }
       }
 

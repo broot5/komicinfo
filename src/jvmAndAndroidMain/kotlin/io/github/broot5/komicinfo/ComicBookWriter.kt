@@ -26,6 +26,8 @@ object ComicBookWriter {
    */
   fun write(comicBook: ComicBook, destination: File): Result<File> {
     return runCatching {
+      val destinationFile = destination.absoluteFile
+
       // Validate all image files exist before starting
       comicBook.imageFiles.forEach { imageFile ->
         if (!imageFile.exists()) {
@@ -34,11 +36,11 @@ object ComicBookWriter {
       }
 
       // Create parent directory if it doesn't exist
-      destination.parentFile?.mkdirs()
+      destinationFile.parentFile?.mkdirs()
 
       // Use temporary file
       val tmpDir =
-          destination.parentFile
+          destinationFile.parentFile
               ?: File(
                   requireNotNull(System.getProperty("java.io.tmpdir")) {
                     "System property 'java.io.tmpdir' is not set"
@@ -55,13 +57,13 @@ object ComicBookWriter {
         writeToFile(comicBook, tempFile)
 
         // Atomic replacement
-        AtomicReplace.moveTempIntoPlace(tempFile, destination)
+        AtomicReplace.moveTempIntoPlace(tempFile, destinationFile)
 
         destination
       } catch (e: Exception) {
         // Clean up temp file on failure
         tempFile.delete()
-        throw ComicBookWriteException(destination.absolutePath, e)
+        throw ComicBookWriteException(destinationFile.absolutePath, e)
       }
     }
   }

@@ -7,33 +7,39 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
+@DisplayName("ComicInfo Snapshot")
 class ComicInfoSnapshotTest {
+
   private val actualPath: Path = Path.of("build", "test-snapshots", "ComicInfo.actual.xml")
 
   @Test
-  fun `generated ComicInfo xml stays stable`() {
-    val xmlBytes = ComicInfoXmlCodec.encode(sampleComicInfo().toComicInfoXml())
+  @DisplayName("should generate stable XML matching the expected snapshot")
+  fun generatedXmlMatchesSnapshot() {
+    val xmlBytes = ComicInfoXmlCodec.encode(snapshotComicInfo().toComicInfoXml())
     val xmlString = xmlBytes.decodeToString()
 
+    // Write actual output for comparison
     Files.createDirectories(actualPath.parent)
     Files.writeString(actualPath, xmlString, StandardCharsets.UTF_8)
 
-    val expected =
-        requireNotNull(javaClass.getResource("/snapshots/ComicInfo.expected.xml")) {
-              "Missing test resource: /snapshots/ComicInfo.expected.xml"
-            }
-            .readText(StandardCharsets.UTF_8)
+    val expected = loadExpectedSnapshot()
 
     assertEquals(
         expected.normalizeLineEndings().trim(),
         xmlString.normalizeLineEndings().trim(),
-        "Generated ComicInfo XML differs from snapshot. Inspect ${actualPath.toAbsolutePath()} to see the current output.",
+        "Generated ComicInfo XML differs from snapshot. " +
+            "Inspect ${actualPath.toAbsolutePath()} to see the current output.",
     )
   }
 
-  private fun sampleComicInfo(): ComicInfo =
+  /**
+   * Creates a ComicInfo specifically for snapshot testing. This should remain stable - any changes
+   * will break the snapshot test.
+   */
+  private fun snapshotComicInfo(): ComicInfo =
       ComicInfo(
           title = "komicinfo #1",
           series = "komicinfo",
@@ -77,6 +83,12 @@ class ComicInfoSnapshotTest {
               ),
           communityRating = BigDecimal("4.54"),
       )
+
+  private fun loadExpectedSnapshot(): String =
+      requireNotNull(javaClass.getResource("/snapshots/ComicInfo.expected.xml")) {
+            "Missing test resource: /snapshots/ComicInfo.expected.xml"
+          }
+          .readText(StandardCharsets.UTF_8)
 
   private fun String.normalizeLineEndings(): String = replace("\r\n", "\n")
 }

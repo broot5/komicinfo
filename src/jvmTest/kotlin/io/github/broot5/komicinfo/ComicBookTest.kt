@@ -1,121 +1,177 @@
 package io.github.broot5.komicinfo
 
 import io.github.broot5.komicinfo.model.ComicInfo
+import io.github.broot5.komicinfo.model.ComicPage
+import io.github.broot5.komicinfo.model.ComicPageType
 import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
-/** Tests for ComicBook creation and image processing */
+@DisplayName("ComicBook")
 class ComicBookTest {
   @TempDir lateinit var tempDir: Path
 
-  @Test
-  fun `should handle valid and invalid images together`() {
-    val validImage = TestHelper.createImageFile(tempDir, "valid.jpg", 800, 600)
-    val invalidImage = tempDir.resolve("invalid.jpg").toFile().apply { writeText("invalid") }
-    val pngImage = TestHelper.createImageFile(tempDir, "page.png", 1024, 768, format = "png")
+  @Nested
+  @DisplayName("create()")
+  inner class Create {
 
-    val info = ComicInfo(title = "Mixed Test")
-    val comicBook = ComicBook.create(info, listOf(validImage, invalidImage, pngImage))
+    @Test
+    @DisplayName("should extract dimensions from valid image files")
+    fun extractDimensionsFromValidImages() {
+      val jpgImage = TestFileHelper.createImageFile(tempDir, "page.jpg", 800, 600)
+      val pngImage = TestFileHelper.createImageFile(tempDir, "page.png", 1024, 768, format = "png")
 
-    // Verify page count and basic structure
-    assertEquals(3, comicBook.info.pageCount)
-    assertEquals(3, comicBook.info.pages.size)
+      val comicBook =
+          ComicBook.create(
+              TestFixtures.minimalComicInfo(),
+              listOf(jpgImage, pngImage),
+          )
 
-    // Valid JPG should have dimensions
-    assertEquals(800, comicBook.info.pages[0].imageWidth)
-    assertEquals(600, comicBook.info.pages[0].imageHeight)
-    assertNotNull(comicBook.info.pages[0].imageSize)
-    assertTrue(comicBook.info.pages[0].imageSize!! > 0)
+      assertEquals(2, comicBook.info.pageCount)
+      assertEquals(2, comicBook.info.pages.size)
 
-    // Invalid image should have null dimensions but still exist
-    assertNull(comicBook.info.pages[1].imageWidth)
-    assertNull(comicBook.info.pages[1].imageHeight)
+      with(comicBook.info.pages[0]) {
+        assertEquals(800, imageWidth)
+        assertEquals(600, imageHeight)
+        assertNotNull(imageSize)
+        assertTrue(imageSize!! > 0)
+      }
 
-    // Valid PNG should have dimensions
-    assertEquals(1024, comicBook.info.pages[2].imageWidth)
-    assertEquals(768, comicBook.info.pages[2].imageHeight)
-  }
+      with(comicBook.info.pages[1]) {
+        assertEquals(1024, imageWidth)
+        assertEquals(768, imageHeight)
+      }
+    }
 
-  @Test
-  fun `should preserve original ComicInfo fields`() {
-    val image = TestHelper.createImageFile(tempDir, "page.jpg", 800, 600)
-    val originalInfo =
-        ComicInfo(
-            title = "Test Comic",
-            series = "Test Series",
-            number = "1",
-            writer = listOf("Author 1", "Author 2"),
-            publisher = "Test Publisher",
-        )
+    @Test
+    @DisplayName("should handle invalid and empty images gracefully")
+    fun handleInvalidImagesGracefully() {
+      val validImage = TestFileHelper.createImageFile(tempDir, "valid.jpg", 800, 600)
+      val invalidImage = TestFileHelper.createInvalidImageFile(tempDir, "invalid.jpg")
+      val emptyFile = TestFileHelper.createEmptyFile(tempDir, "empty.jpg")
 
-    val comicBook = ComicBook.create(originalInfo, listOf(image))
+      val comicBook =
+          ComicBook.create(
+              TestFixtures.minimalComicInfo(),
+              listOf(validImage, invalidImage, emptyFile),
+          )
 
-    assertEquals("Test Comic", comicBook.info.title)
-    assertEquals("Test Series", comicBook.info.series)
-    assertEquals("1", comicBook.info.number)
-    assertEquals(listOf("Author 1", "Author 2"), comicBook.info.writer)
-    assertEquals("Test Publisher", comicBook.info.publisher)
-    assertEquals(1, comicBook.info.pageCount) // Auto-updated
-  }
+      assertEquals(3, comicBook.info.pageCount)
 
-  @Test
-  fun `pageBuilder should allow customization`() {
-    val image1 = TestHelper.createImageFile(tempDir, "cover.jpg", 800, 1200)
-    val image2 = TestHelper.createImageFile(tempDir, "page1.jpg", 800, 1200)
+      // Valid image should have dimensions
+      assertNotNull(comicBook.info.pages[0].imageWidth)
 
-    val info = ComicInfo(title = "Test")
-    val comicBook =
-        ComicBook.create(info, listOf(image1, image2)) { page, file ->
-          if (file.name.contains("cover")) {
-            page.copy(type = io.github.broot5.komicinfo.model.ComicPageType.FRONT_COVER)
-          } else {
-            page.copy(bookmark = "Page ${page.image}")
+      // Invalid image should have null dimensions but still be included
+      assertNull(comicBook.info.pages[1].imageWidth)
+      assertNull(comicBook.info.pages[1].imageHeight)
+
+      // Empty file should have null imageSize
+      assertNull(comicBook.info.pages[2].imageSize)
+    }
+
+    @Test
+    @DisplayName("should preserve original ComicInfo fields while updating pageCount")
+    fun preserveOriginalComicInfoFields() {
+      val image = TestFileHelper.createImageFile(tempDir, "page.jpg", 800, 600)
+      val originalInfo =
+          TestFixtures.typicalComicInfo(
+              title = "Test Comic",
+              series = "Test Series",
+              number = "1",
+              writer = listOf("Writer A", "Writer B"),
+              publisher = "Test Publisher",
+          )
+
+      val comicBook = ComicBook.create(originalInfo, listOf(image))
+
+      assertEquals("Test Comic", comicBook.info.title)
+      assertEquals("Test Series", comicBook.info.series)
+      assertEquals("1", comicBook.info.number)
+      assertEquals(listOf("Writer A", "Writer B"), comicBook.info.writer)
+      assertEquals("Test Publisher", comicBook.info.publisher)
+      assertEquals(1, comicBook.info.pageCount) // Auto-updated from image count
+    }
+
+    @Test
+    @DisplayName("should allow page customization via pageBuilder")
+    fun pageBuilderAllowsCustomization() {
+      val coverImage = TestFileHelper.createImageFile(tempDir, "cover.jpg", 800, 1200)
+      val pageImage = TestFileHelper.createImageFile(tempDir, "page1.jpg", 800, 1200)
+
+      val comicBook =
+          ComicBook.create(
+              TestFixtures.minimalComicInfo(),
+              listOf(coverImage, pageImage),
+          ) { page, file ->
+            when {
+              file.name.contains("cover") -> page.copy(type = ComicPageType.FRONT_COVER)
+              else -> page.copy(bookmark = "Page ${page.image}")
+            }
           }
-        }
 
-    assertEquals(
-        io.github.broot5.komicinfo.model.ComicPageType.FRONT_COVER,
-        comicBook.info.pages[0].type,
-    )
-    assertEquals("Page 1", comicBook.info.pages[1].bookmark)
+      assertEquals(ComicPageType.FRONT_COVER, comicBook.info.pages[0].type)
+      assertEquals("Page 1", comicBook.info.pages[1].bookmark)
+    }
   }
 
-  @Test
-  fun `create should merge metadata but keep generated dimensions`() {
-    val image = TestHelper.createImageFile(tempDir, "custom.jpg", 640, 480)
-    val baseInfo =
-        ComicInfo(
-            title = "Merge",
-            pages =
-                listOf(
-                    io.github.broot5.komicinfo.model.ComicPage(
-                        image = 0,
-                        type = io.github.broot5.komicinfo.model.ComicPageType.BACK_COVER,
-                        doublePage = true,
-                        imageSize = 1234L,
-                        key = "custom-key",
-                        bookmark = "Bookmark",
-                        imageWidth = 10,
-                        imageHeight = 20,
-                    ),
-                ),
-        )
+  @Nested
+  @DisplayName("metadata merging")
+  inner class MetadataMerging {
 
-    val comicBook =
-        ComicBook.create(baseInfo, listOf(image)) { page, _ ->
-          page.copy(bookmark = page.bookmark?.uppercase())
-        }
+    @Test
+    @DisplayName("should prefer generated dimensions over existing metadata")
+    fun preferGeneratedDimensionsOverExisting() {
+      val image = TestFileHelper.createImageFile(tempDir, "page.jpg", 640, 480)
+      val baseInfo =
+          ComicInfo(
+              title = "Merge Test",
+              pages =
+                  listOf(
+                      ComicPage(
+                          image = 0,
+                          type = ComicPageType.BACK_COVER,
+                          doublePage = true,
+                          key = "custom-key",
+                          bookmark = "Original Bookmark",
+                          imageWidth = 10,
+                          imageHeight = 20,
+                      ),
+                  ),
+          )
 
-    assertEquals(1, comicBook.info.pageCount)
-    val mergedPage = comicBook.info.pages.single()
-    assertEquals(io.github.broot5.komicinfo.model.ComicPageType.BACK_COVER, mergedPage.type)
-    assertTrue(mergedPage.doublePage!!)
-    assertEquals("custom-key", mergedPage.key)
-    assertEquals("BOOKMARK", mergedPage.bookmark)
-    assertEquals(640, mergedPage.imageWidth)
-    assertEquals(480, mergedPage.imageHeight)
-    assertEquals(image.length(), mergedPage.imageSize)
+      val comicBook = ComicBook.create(baseInfo, listOf(image))
+
+      val mergedPage = comicBook.info.pages.single()
+      assertEquals(ComicPageType.BACK_COVER, mergedPage.type)
+      assertEquals(true, mergedPage.doublePage)
+      assertEquals("custom-key", mergedPage.key)
+      assertEquals("Original Bookmark", mergedPage.bookmark)
+
+      // Generated values should override
+      assertEquals(640, mergedPage.imageWidth)
+      assertEquals(480, mergedPage.imageHeight)
+      assertEquals(image.length(), mergedPage.imageSize)
+    }
+
+    @Test
+    @DisplayName("should apply pageBuilder after merging")
+    fun pageBuilderAppliedAfterMerging() {
+      val image = TestFileHelper.createImageFile(tempDir, "page.jpg", 640, 480)
+      val baseInfo =
+          ComicInfo(
+              title = "Builder Test",
+              pages = listOf(ComicPage(image = 0, bookmark = "original")),
+          )
+
+      val comicBook =
+          ComicBook.create(baseInfo, listOf(image)) { page, _ ->
+            page.copy(bookmark = page.bookmark?.uppercase())
+          }
+
+      assertEquals("ORIGINAL", comicBook.info.pages.single().bookmark)
+    }
   }
 }

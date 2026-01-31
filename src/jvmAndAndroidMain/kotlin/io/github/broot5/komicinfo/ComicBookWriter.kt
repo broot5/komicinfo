@@ -74,9 +74,7 @@ public object ComicBookWriter {
     // Check for duplicate file names
     val fileNames = comicBook.imageFiles.map { it.name }
     val duplicates = fileNames.groupingBy { it }.eachCount().filter { it.value > 1 }
-    if (duplicates.isNotEmpty()) {
-      throw IllegalArgumentException("Duplicate file names: ${duplicates.keys.joinToString()}")
-    }
+    require(duplicates.isEmpty()) { "Duplicate file names: ${duplicates.keys.joinToString()}" }
 
     val comicInfoXml = comicBook.info.toComicInfoXml()
     val xmlBytes = ComicInfoXmlCodec.encode(comicInfoXml)

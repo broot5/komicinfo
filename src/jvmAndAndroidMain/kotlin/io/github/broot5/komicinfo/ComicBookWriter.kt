@@ -1,5 +1,6 @@
 package io.github.broot5.komicinfo
 
+import io.github.broot5.komicinfo.exceptions.ComicBookException
 import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.exceptions.ComicBookWriteException
 import io.github.broot5.komicinfo.internal.AtomicReplace
@@ -26,67 +27,59 @@ public object ComicBookWriter {
    */
   public fun write(comicBook: ComicBook, destination: File): Result<File> {
     return runCatching {
-      val destinationFile = destination.absoluteFile
+          val destinationFile = destination.absoluteFile
 
-      // Validate all image files exist before starting
-      comicBook.imageFiles.forEach { imageFile ->
-        if (!imageFile.exists()) {
-          throw ComicBookFileNotFoundException(imageFile.absolutePath)
+          // Validate all image files exist before starting
+          comicBook.imageFiles.forEach { imageFile ->
+            if (!imageFile.exists()) {
+              throw ComicBookFileNotFoundException(imageFile.absolutePath)
+            }
+          }
+
+          // Create parent directory if it doesn't exist
+          destinationFile.parentFile?.mkdirs()
+
+          // Use temporary file
+          val tmpDir =
+              destinationFile.parentFile
+                  ?: File(
+                      requireNotNull(System.getProperty("java.io.tmpdir")) {
+                        "System property 'java.io.tmpdir' is not set"
+                      }
+                  )
+          val tempFile = File.createTempFile("komicinfo-", ".tmp", tmpDir)
+
+          runCatching {
+                writeToFile(comicBook, tempFile)
+                AtomicReplace.moveTempIntoPlace(tempFile, destinationFile)
+                destination
+              }
+              .onFailure { tempFile.delete() }
+              .getOrThrow()
         }
-      }
-
-      // Create parent directory if it doesn't exist
-      destinationFile.parentFile?.mkdirs()
-
-      // Use temporary file
-      val tmpDir =
-          destinationFile.parentFile
-              ?: File(
-                  requireNotNull(System.getProperty("java.io.tmpdir")) {
-                    "System property 'java.io.tmpdir' is not set"
-                  }
-              )
-      val tempFile =
-          File.createTempFile(
-              "komicinfo-",
-              ".tmp",
-              tmpDir,
-          )
-
-      try {
-        writeToFile(comicBook, tempFile)
-
-        // Atomic replacement
-        AtomicReplace.moveTempIntoPlace(tempFile, destinationFile)
-
-        destination
-      } catch (e: Exception) {
-        // Clean up temp file on failure
-        tempFile.delete()
-        throw ComicBookWriteException(destinationFile.absolutePath, e)
-      }
-    }
+        .recoverCatching { e -> throw e.toComicBookException(destination) }
   }
 
   private fun writeToFile(comicBook: ComicBook, file: File) {
     val comicInfoXml = comicBook.info.toComicInfoXml()
+    val xmlBytes = ComicInfoXmlCodec.encode(comicInfoXml)
 
-    try {
-      val xmlBytes = ComicInfoXmlCodec.encode(comicInfoXml)
+    ZipOutputStream(BufferedOutputStream(FileOutputStream(file))).use { zipStream ->
+      // Write ComicInfo.xml
+      zipStream.putStoredEntry(name = "ComicInfo.xml", bytes = xmlBytes)
 
-      ZipOutputStream(BufferedOutputStream(FileOutputStream(file))).use { zipStream ->
-        // Write ComicInfo.xml
-        zipStream.putStoredEntry(name = "ComicInfo.xml", bytes = xmlBytes)
-
-        // Write image files
-        comicBook.imageFiles.forEach { imageFile ->
-          zipStream.putStoredEntry(imageFile.name, imageFile.readBytes())
-        }
+      // Write image files
+      comicBook.imageFiles.forEach { imageFile ->
+        zipStream.putStoredEntry(imageFile.name, imageFile.readBytes())
       }
-    } catch (e: XmlException) {
-      throw ComicBookWriteException(file.absolutePath, e)
-    } catch (e: IOException) {
-      throw ComicBookWriteException(file.absolutePath, e)
     }
   }
+
+  private fun Throwable.toComicBookException(destination: File): ComicBookException =
+      when (this) {
+        is ComicBookException -> this
+        is XmlException -> ComicBookWriteException(destination.absolutePath, this)
+        is IOException -> ComicBookWriteException(destination.absolutePath, this)
+        else -> ComicBookWriteException(destination.absolutePath, this)
+      }
 }

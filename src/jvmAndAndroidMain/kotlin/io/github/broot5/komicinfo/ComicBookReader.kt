@@ -1,6 +1,11 @@
 package io.github.broot5.komicinfo
 
-import io.github.broot5.komicinfo.exceptions.*
+import io.github.broot5.komicinfo.exceptions.ComicBookException
+import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
+import io.github.broot5.komicinfo.exceptions.ComicInfoNotFoundException
+import io.github.broot5.komicinfo.exceptions.ComicInfoParseException
+import io.github.broot5.komicinfo.exceptions.CorruptedArchiveException
+import io.github.broot5.komicinfo.exceptions.InvalidComicBookFormatException
 import io.github.broot5.komicinfo.model.ComicInfo
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
 import java.io.File
@@ -27,38 +32,37 @@ public object ComicBookReader {
    */
   public fun read(file: File): Result<ComicInfo> {
     return runCatching {
-      // Validate file existence
-      if (!file.exists()) {
-        throw ComicBookFileNotFoundException(file.absolutePath)
-      }
+          // Validate file existence
+          if (!file.exists()) {
+            throw ComicBookFileNotFoundException(file.absolutePath)
+          }
 
-      // Validate file format
-      val extension = file.extension.lowercase()
-      if (extension !in SUPPORTED_EXTENSIONS) {
-        throw InvalidComicBookFormatException(extension, SUPPORTED_EXTENSIONS)
-      }
+          // Validate file format
+          val extension = file.extension.lowercase()
+          if (extension !in SUPPORTED_EXTENSIONS) {
+            throw InvalidComicBookFormatException(extension, SUPPORTED_EXTENSIONS)
+          }
 
-      // Parse ComicInfo.xml
-      try {
-        ZipFile(file).use { zipFile ->
-          val comicInfoEntry =
-              zipFile.getEntry("ComicInfo.xml") ?: throw ComicInfoNotFoundException(file.name)
+          // Parse ComicInfo.xml
+          ZipFile(file).use { zipFile ->
+            val comicInfoEntry =
+                zipFile.getEntry("ComicInfo.xml") ?: throw ComicInfoNotFoundException(file.name)
 
-          try {
             zipFile.getInputStream(comicInfoEntry).use { inputStream ->
               ComicInfoXmlCodec.decode(inputStream.readBytes()).toComicInfo()
             }
-          } catch (e: XmlException) {
-            throw ComicInfoParseException(e)
-          } catch (e: SerializationException) {
-            throw ComicInfoParseException(e)
-          } catch (e: IllegalArgumentException) {
-            throw ComicInfoParseException(e)
           }
         }
-      } catch (e: IOException) {
-        throw CorruptedArchiveException(file.absolutePath, e)
-      }
-    }
+        .recoverCatching { e -> throw e.toComicBookException(file) }
   }
+
+  private fun Throwable.toComicBookException(file: File): ComicBookException =
+      when (this) {
+        is ComicBookException -> this
+        is XmlException -> ComicInfoParseException(this)
+        is SerializationException -> ComicInfoParseException(this)
+        is IllegalArgumentException -> ComicInfoParseException(this)
+        is IOException -> CorruptedArchiveException(file.absolutePath, this)
+        else -> CorruptedArchiveException(file.absolutePath, this)
+      }
 }

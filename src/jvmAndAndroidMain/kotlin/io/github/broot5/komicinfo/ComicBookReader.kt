@@ -9,7 +9,7 @@ import java.util.zip.ZipFile
 import kotlinx.serialization.SerializationException
 import nl.adaptivity.xmlutil.XmlException
 
-object ComicBookReader {
+public object ComicBookReader {
   private val SUPPORTED_EXTENSIONS = listOf("cbz", "zip")
 
   /**
@@ -25,7 +25,7 @@ object ComicBookReader {
    * - [ComicInfoParseException] if ComicInfo.xml cannot be parsed
    * - [CorruptedArchiveException] if the archive is corrupted or cannot be read
    */
-  fun read(file: File): Result<ComicInfo> {
+  public fun read(file: File): Result<ComicInfo> {
     return runCatching {
       // Validate file existence
       if (!file.exists()) {

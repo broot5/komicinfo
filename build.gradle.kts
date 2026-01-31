@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
   kotlin("multiplatform") version "2.2.20"
@@ -25,6 +26,8 @@ android {
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
+  explicitApi = ExplicitApiMode.Strict
+
   jvmToolchain(17)
 
   applyDefaultHierarchyTemplate {

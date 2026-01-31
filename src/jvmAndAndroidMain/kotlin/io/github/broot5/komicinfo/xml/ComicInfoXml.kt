@@ -16,14 +16,14 @@ import nl.adaptivity.xmlutil.serialization.XmlNamespaceDeclSpecs
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import nl.adaptivity.xmlutil.serialization.XmlValue
 
+private const val XSD_NAMESPACE = "xsd=http://www.w3.org/2001/XMLSchema"
+private const val XSI_NAMESPACE = "xsi=http://www.w3.org/2001/XMLSchema-instance"
+
 @OptIn(ExperimentalXmlUtilApi::class)
 @Suppress("PropertyName")
 @Serializable
 @XmlSerialName("ComicInfo")
-@XmlNamespaceDeclSpecs(
-    "xsd=http://www.w3.org/2001/XMLSchema",
-    "xsi=http://www.w3.org/2001/XMLSchema-instance",
-)
+@XmlNamespaceDeclSpecs(XSD_NAMESPACE, XSI_NAMESPACE)
 internal data class ComicInfoXml(
     @XmlElement(true) val Title: String? = null,
     @XmlElement(true) val Series: String? = null,

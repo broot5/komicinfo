@@ -13,7 +13,7 @@ private fun String?.toList(delimiter: Char = ','): List<String> =
 private fun List<String>.joinOrNull(delimiter: String = ","): String? =
     if (isEmpty()) null else joinToString(delimiter)
 
-private fun String?.nullIfBlank(): String? = this?.takeIf { it.isNotBlank() }
+private fun String?.nullIfBlank(): String? = this?.ifBlank { null }
 
 internal fun ComicInfo.toComicInfoXml(): ComicInfoXml {
   val pageContainer =

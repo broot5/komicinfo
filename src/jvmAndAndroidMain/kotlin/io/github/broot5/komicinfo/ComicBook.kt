@@ -6,11 +6,11 @@ import io.github.broot5.komicinfo.model.ComicPage
 import java.io.File
 
 /** Comic metadata plus the ordered list of page images. */
-data class ComicBook(
-    val info: ComicInfo,
-    val imageFiles: List<File>,
+public data class ComicBook(
+    public val info: ComicInfo,
+    public val imageFiles: List<File>,
 ) {
-  companion object {
+  public companion object {
     /**
      * Builds a comic, blending existing metadata with file-derived sizes and dimensions.
      *
@@ -18,7 +18,7 @@ data class ComicBook(
      * @param imageFiles page images in reading order
      * @param pageBuilder hook to tweak each merged page before it is stored
      */
-    fun create(
+    public fun create(
         baseInfo: ComicInfo,
         imageFiles: List<File>,
         pageBuilder: (page: ComicPage, file: File) -> ComicPage = { page, _ -> page },

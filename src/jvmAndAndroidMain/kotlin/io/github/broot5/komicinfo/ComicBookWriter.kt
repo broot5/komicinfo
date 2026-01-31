@@ -12,7 +12,7 @@ import java.io.IOException
 import java.util.zip.ZipOutputStream
 import nl.adaptivity.xmlutil.XmlException
 
-object ComicBookWriter {
+public object ComicBookWriter {
   /**
    * Writes a ComicBook to a CBZ archive file.
    *
@@ -24,7 +24,7 @@ object ComicBookWriter {
    * - [ComicBookFileNotFoundException] if any image file doesn't exist
    * - [ComicBookWriteException] if writing fails
    */
-  fun write(comicBook: ComicBook, destination: File): Result<File> {
+  public fun write(comicBook: ComicBook, destination: File): Result<File> {
     return runCatching {
       val destinationFile = destination.absoluteFile
 

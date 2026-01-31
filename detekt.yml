@@ -1,0 +1,32 @@
+build:
+  maxIssues: 0
+
+complexity:
+  CyclomaticComplexMethod:
+    excludes:
+      - "**/mappers.kt"
+  TooManyFunctions:
+    excludes:
+      - "**/mappers.kt"
+
+exceptions:
+  TooGenericExceptionCaught:
+    excludes:
+      - "**/ComicBookWriter.kt"
+
+naming:
+  ConstructorParameterNaming:
+    excludes:
+      - "**/xml/**"
+  MatchingDeclarationName:
+    active: false
+
+style:
+  WildcardImport:
+    active: false
+  ReturnCount:
+    max: 5
+    excludes:
+      - "**/ImageDimensions.*.kt"
+  ThrowsCount:
+    max: 5

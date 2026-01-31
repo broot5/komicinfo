@@ -2,10 +2,12 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 
 plugins {
-  kotlin("multiplatform") version "2.2.20"
-  kotlin("plugin.serialization") version "2.2.20"
-  id("com.android.library") version "8.13.2"
-  id("com.vanniktech.maven.publish") version "0.35.0"
+  alias(libs.plugins.kotlin.multiplatform)
+  alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.android.library)
+  alias(libs.plugins.maven.publish)
+  alias(libs.plugins.detekt)
+  alias(libs.plugins.kover)
 }
 
 group = "io.github.broot5"
@@ -26,9 +28,13 @@ android {
 
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
+  jvmToolchain(17)
   explicitApi = ExplicitApiMode.Strict
 
-  jvmToolchain(17)
+  compilerOptions {
+    freeCompilerArgs.add("-Xexpect-actual-classes")
+    allWarningsAsErrors.set(true)
+  }
 
   applyDefaultHierarchyTemplate {
     common {
@@ -39,38 +45,17 @@ kotlin {
     }
   }
 
-  androidTarget {
-    publishLibraryVariants("release")
-    compilations.all {
-      compileTaskProvider.configure {
-        compilerOptions {
-          jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-          freeCompilerArgs.add("-Xexpect-actual-classes")
-        }
-      }
-    }
-  }
+  androidTarget { publishLibraryVariants("release") }
 
-  jvm("jvm") {
-    compilations.all {
-      compileTaskProvider.configure {
-        compilerOptions {
-          jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-          freeCompilerArgs.add("-Xexpect-actual-classes")
-        }
-      }
-    }
-  }
+  jvm()
 
   sourceSets {
-    val commonMain by getting
-
     val jvmAndAndroidMain by getting {
       dependencies {
-        api("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
-        implementation("io.github.pdvrieze.xmlutil:core:0.91.3")
-        implementation("io.github.pdvrieze.xmlutil:serialization:0.91.3")
+        api(libs.kotlinx.datetime)
+        implementation(libs.kotlinx.serialization.core)
+        implementation(libs.xmlutil.core)
+        implementation(libs.xmlutil.serialization)
       }
     }
 
@@ -81,6 +66,32 @@ kotlin {
 tasks.withType<Test>().configureEach {
   useJUnitPlatform()
   systemProperty("java.awt.headless", "true")
+}
+
+detekt {
+  source.setFrom(
+      "src/commonMain/kotlin",
+      "src/jvmAndAndroidMain/kotlin",
+      "src/jvmMain/kotlin",
+      "src/androidMain/kotlin",
+  )
+  buildUponDefaultConfig = true
+  config.setFrom("detekt.yml")
+  parallel = true
+}
+
+kover {
+  currentProject { sources { excludedSourceSets.add("debug") } }
+
+  reports {
+    filters {
+      excludes {
+        classes("*Test", "*Test$*", "*.TestHelper*")
+        packages("*.test", "*.tests")
+      }
+    }
+    verify { rule { minBound(70) } }
+  }
 }
 
 mavenPublishing {

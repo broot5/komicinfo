@@ -21,8 +21,8 @@ internal actual object ImageDimensions {
                 val width = reader.getWidth(index)
                 val height = reader.getHeight(index)
                 if (width > 0 && height > 0) return width to height
-              } catch (_: Throwable) {
-                // Try next reader
+              } catch (_: Exception) {
+                // Try next reader - IOException, IllegalArgumentException, etc.
               } finally {
                 runCatching { reader.dispose() }
                 runCatching { iis.seek(0) }

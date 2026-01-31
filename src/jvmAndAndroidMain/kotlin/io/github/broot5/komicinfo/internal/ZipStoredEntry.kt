@@ -10,6 +10,7 @@ private const val BUFFER_SIZE = 8192
 private fun validateEntryName(name: String) {
   require(!name.contains("..")) { "Path traversal detected: $name" }
   require(!name.startsWith("/")) { "Absolute path not allowed: $name" }
+  require(!name.contains("\\")) { "Backslash not allowed: $name" }
 }
 
 internal fun ZipOutputStream.putStoredEntry(name: String, bytes: ByteArray) {

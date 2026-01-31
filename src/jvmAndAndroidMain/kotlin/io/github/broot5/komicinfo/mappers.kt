@@ -1,5 +1,6 @@
 package io.github.broot5.komicinfo
 
+import io.github.broot5.komicinfo.internal.BiDirectionalEnumMapper
 import io.github.broot5.komicinfo.model.*
 import io.github.broot5.komicinfo.xml.*
 import java.math.BigDecimal
@@ -70,13 +71,13 @@ internal fun ComicInfo.toComicInfoXml(): ComicInfoXml {
 }
 
 internal fun ComicInfoXml.toComicInfo(): ComicInfo {
+  val year = Year
+  val month = Month
+  val day = Day
   val date =
-      runCatching {
-            if (Year != null && Month != null && Day != null) {
-              LocalDate(Year, Month, Day)
-            } else null
-          }
-          .getOrNull()
+      if (year != null && month != null && day != null) {
+        runCatching { LocalDate(year, month, day) }.getOrNull()
+      } else null
 
   return ComicInfo(
       title = Title.nullIfBlank(),
@@ -148,102 +149,76 @@ private fun ComicPageInfoXml.toModel(): ComicPage =
         imageHeight = ImageHeight,
     )
 
-private fun YesNo?.toXml(): YesNoXml =
-    when (this) {
-      YesNo.YES -> YesNoXml.Yes
-      YesNo.NO -> YesNoXml.No
-      else -> YesNoXml.Unknown
-    }
+private val yesNoMapper =
+    BiDirectionalEnumMapper(
+        mapOf(YesNo.YES to YesNoXml.Yes, YesNo.NO to YesNoXml.No),
+        defaultXml = YesNoXml.Unknown,
+    )
 
-private fun YesNoXml?.toModel(): YesNo? =
-    when (this) {
-      YesNoXml.Yes -> YesNo.YES
-      YesNoXml.No -> YesNo.NO
-      else -> null
-    }
+private fun YesNo?.toXml(): YesNoXml = yesNoMapper.toXml(this)
 
-private fun Manga?.toXml(): MangaXml =
-    when (this) {
-      Manga.YES -> MangaXml.Yes
-      Manga.NO -> MangaXml.No
-      Manga.YES_AND_RIGHT_TO_LEFT -> MangaXml.YesAndRightToLeft
-      else -> MangaXml.Unknown
-    }
+private fun YesNoXml?.toModel(): YesNo? = yesNoMapper.toModel(this)
 
-private fun MangaXml?.toModel(): Manga? =
-    when (this) {
-      MangaXml.Yes -> Manga.YES
-      MangaXml.No -> Manga.NO
-      MangaXml.YesAndRightToLeft -> Manga.YES_AND_RIGHT_TO_LEFT
-      else -> null
-    }
+private val mangaMapper =
+    BiDirectionalEnumMapper(
+        mapOf(
+            Manga.YES to MangaXml.Yes,
+            Manga.NO to MangaXml.No,
+            Manga.YES_AND_RIGHT_TO_LEFT to MangaXml.YesAndRightToLeft,
+        ),
+        defaultXml = MangaXml.Unknown,
+    )
 
-private fun AgeRating?.toXml(): AgeRatingXml =
-    when (this) {
-      AgeRating.ADULTS_ONLY_18_PLUS -> AgeRatingXml.ADULTS_ONLY_18_PLUS
-      AgeRating.EARLY_CHILDHOOD -> AgeRatingXml.EARLY_CHILDHOOD
-      AgeRating.EVERYONE -> AgeRatingXml.Everyone
-      AgeRating.EVERYONE_10_PLUS -> AgeRatingXml.EVERYONE_10_PLUS
-      AgeRating.G -> AgeRatingXml.G
-      AgeRating.KIDS_TO_ADULTS -> AgeRatingXml.KIDS_TO_ADULTS
-      AgeRating.M -> AgeRatingXml.M
-      AgeRating.MA15_PLUS -> AgeRatingXml.MA15_PLUS
-      AgeRating.MATURE_17_PLUS -> AgeRatingXml.MATURE_17_PLUS
-      AgeRating.PG -> AgeRatingXml.PG
-      AgeRating.R18_PLUS -> AgeRatingXml.R18_PLUS
-      AgeRating.RATING_PENDING -> AgeRatingXml.RATING_PENDING
-      AgeRating.TEEN -> AgeRatingXml.Teen
-      AgeRating.X18_PLUS -> AgeRatingXml.X18_PLUS
-      else -> AgeRatingXml.Unknown
-    }
+private fun Manga?.toXml(): MangaXml = mangaMapper.toXml(this)
 
-private fun AgeRatingXml?.toModel(): AgeRating? =
-    when (this) {
-      AgeRatingXml.ADULTS_ONLY_18_PLUS -> AgeRating.ADULTS_ONLY_18_PLUS
-      AgeRatingXml.EARLY_CHILDHOOD -> AgeRating.EARLY_CHILDHOOD
-      AgeRatingXml.Everyone -> AgeRating.EVERYONE
-      AgeRatingXml.EVERYONE_10_PLUS -> AgeRating.EVERYONE_10_PLUS
-      AgeRatingXml.G -> AgeRating.G
-      AgeRatingXml.KIDS_TO_ADULTS -> AgeRating.KIDS_TO_ADULTS
-      AgeRatingXml.M -> AgeRating.M
-      AgeRatingXml.MA15_PLUS -> AgeRating.MA15_PLUS
-      AgeRatingXml.MATURE_17_PLUS -> AgeRating.MATURE_17_PLUS
-      AgeRatingXml.PG -> AgeRating.PG
-      AgeRatingXml.R18_PLUS -> AgeRating.R18_PLUS
-      AgeRatingXml.RATING_PENDING -> AgeRating.RATING_PENDING
-      AgeRatingXml.Teen -> AgeRating.TEEN
-      AgeRatingXml.X18_PLUS -> AgeRating.X18_PLUS
-      else -> null
-    }
+private fun MangaXml?.toModel(): Manga? = mangaMapper.toModel(this)
 
-private fun ComicPageType?.toXml(): ComicPageTypeXml =
-    when (this) {
-      ComicPageType.FRONT_COVER -> ComicPageTypeXml.FrontCover
-      ComicPageType.INNER_COVER -> ComicPageTypeXml.InnerCover
-      ComicPageType.ROUNDUP -> ComicPageTypeXml.Roundup
-      ComicPageType.ADVERTISEMENT -> ComicPageTypeXml.Advertisement
-      ComicPageType.EDITORIAL -> ComicPageTypeXml.Editorial
-      ComicPageType.LETTERS -> ComicPageTypeXml.Letters
-      ComicPageType.PREVIEW -> ComicPageTypeXml.Preview
-      ComicPageType.BACK_COVER -> ComicPageTypeXml.BackCover
-      ComicPageType.OTHER -> ComicPageTypeXml.Other
-      ComicPageType.DELETED -> ComicPageTypeXml.Deleted
-      else -> ComicPageTypeXml.Story
-    }
+private val ageRatingMapper =
+    BiDirectionalEnumMapper(
+        mapOf(
+            AgeRating.ADULTS_ONLY_18_PLUS to AgeRatingXml.ADULTS_ONLY_18_PLUS,
+            AgeRating.EARLY_CHILDHOOD to AgeRatingXml.EARLY_CHILDHOOD,
+            AgeRating.EVERYONE to AgeRatingXml.Everyone,
+            AgeRating.EVERYONE_10_PLUS to AgeRatingXml.EVERYONE_10_PLUS,
+            AgeRating.G to AgeRatingXml.G,
+            AgeRating.KIDS_TO_ADULTS to AgeRatingXml.KIDS_TO_ADULTS,
+            AgeRating.M to AgeRatingXml.M,
+            AgeRating.MA15_PLUS to AgeRatingXml.MA15_PLUS,
+            AgeRating.MATURE_17_PLUS to AgeRatingXml.MATURE_17_PLUS,
+            AgeRating.PG to AgeRatingXml.PG,
+            AgeRating.R18_PLUS to AgeRatingXml.R18_PLUS,
+            AgeRating.RATING_PENDING to AgeRatingXml.RATING_PENDING,
+            AgeRating.TEEN to AgeRatingXml.Teen,
+            AgeRating.X18_PLUS to AgeRatingXml.X18_PLUS,
+        ),
+        defaultXml = AgeRatingXml.Unknown,
+    )
+
+private fun AgeRating?.toXml(): AgeRatingXml = ageRatingMapper.toXml(this)
+
+private fun AgeRatingXml?.toModel(): AgeRating? = ageRatingMapper.toModel(this)
+
+private val comicPageTypeMapper =
+    BiDirectionalEnumMapper(
+        mapOf(
+            ComicPageType.FRONT_COVER to ComicPageTypeXml.FrontCover,
+            ComicPageType.INNER_COVER to ComicPageTypeXml.InnerCover,
+            ComicPageType.ROUNDUP to ComicPageTypeXml.Roundup,
+            ComicPageType.STORY to ComicPageTypeXml.Story,
+            ComicPageType.ADVERTISEMENT to ComicPageTypeXml.Advertisement,
+            ComicPageType.EDITORIAL to ComicPageTypeXml.Editorial,
+            ComicPageType.LETTERS to ComicPageTypeXml.Letters,
+            ComicPageType.PREVIEW to ComicPageTypeXml.Preview,
+            ComicPageType.BACK_COVER to ComicPageTypeXml.BackCover,
+            ComicPageType.OTHER to ComicPageTypeXml.Other,
+            ComicPageType.DELETED to ComicPageTypeXml.Deleted,
+        ),
+        defaultXml = ComicPageTypeXml.Story,
+    )
+
+private fun ComicPageType?.toXml(): ComicPageTypeXml = comicPageTypeMapper.toXml(this)
 
 private fun ComicPageTypeXml.toModel(): ComicPageType =
-    when (this) {
-      ComicPageTypeXml.FrontCover -> ComicPageType.FRONT_COVER
-      ComicPageTypeXml.InnerCover -> ComicPageType.INNER_COVER
-      ComicPageTypeXml.Roundup -> ComicPageType.ROUNDUP
-      ComicPageTypeXml.Story -> ComicPageType.STORY
-      ComicPageTypeXml.Advertisement -> ComicPageType.ADVERTISEMENT
-      ComicPageTypeXml.Editorial -> ComicPageType.EDITORIAL
-      ComicPageTypeXml.Letters -> ComicPageType.LETTERS
-      ComicPageTypeXml.Preview -> ComicPageType.PREVIEW
-      ComicPageTypeXml.BackCover -> ComicPageType.BACK_COVER
-      ComicPageTypeXml.Other -> ComicPageType.OTHER
-      ComicPageTypeXml.Deleted -> ComicPageType.DELETED
-    }
+    comicPageTypeMapper.toModel(this) ?: ComicPageType.STORY
 
 private fun BigDecimal.toRatingXml(): RatingXml = RatingXml(this.setScale(1, RoundingMode.HALF_UP))

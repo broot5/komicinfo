@@ -1,17 +1,16 @@
 package io.github.broot5.komicinfo
 
-import io.github.broot5.komicinfo.exceptions.ComicBookException
 import io.github.broot5.komicinfo.exceptions.ComicBookFileNotFoundException
 import io.github.broot5.komicinfo.exceptions.ComicBookWriteException
 import io.github.broot5.komicinfo.internal.AtomicReplace
 import io.github.broot5.komicinfo.internal.putStoredEntry
+import io.github.broot5.komicinfo.internal.toWriterException
 import io.github.broot5.komicinfo.xml.ComicInfoXmlCodec
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.zip.ZipOutputStream
-import nl.adaptivity.xmlutil.XmlException
 
 public object ComicBookWriter {
   /**
@@ -37,7 +36,14 @@ public object ComicBookWriter {
           }
 
           // Create parent directory if it doesn't exist
-          destinationFile.parentFile?.mkdirs()
+          destinationFile.parentFile?.let { parent ->
+            if (!parent.exists() && !parent.mkdirs()) {
+              throw ComicBookWriteException(
+                  destination.absolutePath,
+                  IOException("Failed to create directory: ${parent.absolutePath}"),
+              )
+            }
+          }
 
           // Use temporary file
           val tmpDir =
@@ -54,13 +60,24 @@ public object ComicBookWriter {
                 AtomicReplace.moveTempIntoPlace(tempFile, destinationFile)
                 destination
               }
-              .onFailure { tempFile.delete() }
+              .onFailure {
+                if (!tempFile.delete() && tempFile.exists()) {
+                  tempFile.deleteOnExit()
+                }
+              }
               .getOrThrow()
         }
-        .recoverCatching { e -> throw e.toComicBookException(destination) }
+        .recoverCatching { e -> throw e.toWriterException(destination) }
   }
 
   private fun writeToFile(comicBook: ComicBook, file: File) {
+    // Check for duplicate file names
+    val fileNames = comicBook.imageFiles.map { it.name }
+    val duplicates = fileNames.groupingBy { it }.eachCount().filter { it.value > 1 }
+    if (duplicates.isNotEmpty()) {
+      throw IllegalArgumentException("Duplicate file names: ${duplicates.keys.joinToString()}")
+    }
+
     val comicInfoXml = comicBook.info.toComicInfoXml()
     val xmlBytes = ComicInfoXmlCodec.encode(comicInfoXml)
 
@@ -70,16 +87,8 @@ public object ComicBookWriter {
 
       // Write image files
       comicBook.imageFiles.forEach { imageFile ->
-        zipStream.putStoredEntry(imageFile.name, imageFile.readBytes())
+        zipStream.putStoredEntry(imageFile.name, imageFile)
       }
     }
   }
-
-  private fun Throwable.toComicBookException(destination: File): ComicBookException =
-      when (this) {
-        is ComicBookException -> this
-        is XmlException -> ComicBookWriteException(destination.absolutePath, this)
-        is IOException -> ComicBookWriteException(destination.absolutePath, this)
-        else -> ComicBookWriteException(destination.absolutePath, this)
-      }
 }
